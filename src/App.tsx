@@ -5,9 +5,9 @@ import Login from '@/modules/auth/Login'
 import Header from '@/components/Header'
 import NavTabs, { type Tab } from '@/components/NavTabs'
 import Caixa from '@/modules/caixa/Caixa'
+import Relatorio from '@/modules/relatorio/Relatorio'
 
-// Placeholder components - will be replaced in Tasks 10-13
-const Relatorio = () => <div className="p-4 text-pantera-lavender">Módulo Relatório (em breve)</div>
+// Placeholder components - will be replaced in Tasks 11-13
 const Fiado = () => <div className="p-4 text-pantera-lavender">Módulo Fiado (em breve)</div>
 const Parceiros = () => <div className="p-4 text-pantera-lavender">Módulo Parceiros (em breve)</div>
 const Estoque = () => <div className="p-4 text-pantera-lavender">Módulo Estoque (em breve)</div>
