@@ -20,7 +20,7 @@
 
 | Elemento | Antes | Depois |
 |----------|-------|--------|
-| Valores monetários | `text-2xl font-display` | `text-3xl font-display` + cor da categoria |
+| Valores monetários (cards) | `text-2xl font-display` | `text-3xl font-display` (secundários) / `text-4xl` (principal) |
 | Labels de resumo | `text-xs uppercase` | `text-[11px] uppercase tracking-widest` — mais fino |
 | Título de seção | `text-xl font-display` | `text-lg font-display` |
 | Texto principal (descrição) | `text-sm` | `text-sm font-medium` |
@@ -33,7 +33,7 @@
 | Elemento | Antes | Depois |
 |----------|-------|--------|
 | Padding de card | `p-4` | `p-3` |
-| Padding de item de lista | `py-3 px-4` | `py-2.5 px-3` |
+| Padding de item de lista | `py-3` | `py-2.5 px-3` |
 | Gap entre cards | `gap-3` | `gap-2` |
 | Padding lateral da main | `px-4 py-4` | `px-2 py-3` (mobile) / `px-4 py-3` (desktop) |
 | Espaço entre seções | `mb-4` | `mb-3` |
@@ -42,36 +42,59 @@
 
 ## 3. Cards de Resumo — Nova Hierarquia
 
-O card principal (Saldo / A Receber / Parceiros Devem) ocupa a linha toda, com valor em `text-4xl`. Os dois cards secundários ficam lado a lado em `grid-cols-2` abaixo.
+**SummaryCard ganha prop `primary` (diferente de `size`):**
+- `primary={false}` (padrão): comportamento atual — `text-2xl` ou `text-3xl` via `size`
+- `primary={true}`: `text-4xl font-display`, ocupa linha inteira, sem restrição de largura
+
+O card principal ocupa linha 1 (`col-span-full`). Os secundários ficam em `grid-cols-2` na linha 2:
 
 ```
-┌─────────────────────────────────┐
+┌─────────────────────────────────┐   ← grid-cols-1 (primary)
 │  SALDO                          │
 │  R$ 1.450,00                    │
 └─────────────────────────────────┘
-┌───────────────┐ ┌───────────────┐
+┌───────────────┐ ┌───────────────┐   ← grid-cols-2 (secundários)
 │ Entradas      │ │ Saídas        │
 │ R$ 2.000,00   │ │ R$ 550,00     │
 └───────────────┘ └───────────────┘
 ```
 
+Estrutura JSX resultante em Caixa/Fiado/Parceiros:
+```tsx
+<div className="mb-4 space-y-2">
+  <SummaryCard primary title="Saldo" value={...} accent="green" />
+  <div className="grid grid-cols-2 gap-2">
+    <SummaryCard title="Entradas" value={...} accent="green" />
+    <SummaryCard title="Saídas" value={...} accent="red" />
+  </div>
+</div>
+```
+
 Aplicação por módulo:
-- **Caixa:** Saldo (principal) + Entradas / Saídas
-- **Fiado:** A Receber (principal, amarelo) + Já Recebido
-- **Parceiros:** Parceiros Devem (principal, amarelo) + Já Acertado
-- **Relatório:** mantém 2×2 grid (4 métricas de igual importância)
+- **Caixa:** Saldo (primary, verde/vermelho conforme valor) + Entradas / Saídas
+- **Fiado:** A Receber (primary, amarelo) + Já Recebido
+- **Parceiros:** Parceiros Devem (primary, amarelo) + Já Acertado
+- **Relatório:** mantém 2×2 grid sem alteração (4 métricas iguais)
 
 ---
 
 ## 4. Itens de Lista — Borda Colorida
 
-Cada item tem borda esquerda de `4px` com cor semântica:
+Cada item tem **borda esquerda de 4px** com cor semântica, **substituindo** o badge de status:
 
-| Tipo | Cor da borda | Cor do valor |
-|------|-------------|--------------|
-| Entrada / Pago / Acertado | `border-income` (`#1D9E75`) | `text-income` |
-| Saída | `border-expense` (`#E24B4A`) | `text-expense` |
-| Pendente / A Receber | `border-pending` (`#BA7517`) | `text-pending` |
+| Tipo | Classes Tailwind | Cor do valor |
+|------|-----------------|--------------|
+| Entrada / Pago / Acertado | `border-l-4 border-income` | `text-income` |
+| Saída | `border-l-4 border-expense` | `text-expense` |
+| Pendente / A Receber | `border-l-4 border-pending` | `text-pending` |
+
+**Implementação no `<div>` do item:** substituir `className="card flex..."` por:
+```tsx
+className={`bg-pantera-card rounded-xl p-3 flex items-center gap-3
+  border-l-4 transition-colors duration-300
+  ${item.tipo === 'entrada' ? 'border-income' : 'border-expense'}`}
+```
+(A classe `.card` usa `border border-pantera-purple/20` — substituir pela borda lateral colorida remove a borda padrão e aplica a semântica.)
 
 Layout do item:
 ```
@@ -79,68 +102,87 @@ Layout do item:
 │   [detalhe secundário · data]                 │
 ```
 
-- Badge `PENDENTE`/`PAGO` removido — a cor da borda e do valor já comunicam o status
+- **Badge `PENDENTE`/`PAGO` removido** dos componentes FiadoList e ParceiroList
+- **`src/components/Badge.tsx` DELETADO** — fica sem uso após a remoção
 - Botões de ação (toggle, excluir): ícones `size={15}`, sem fundo, mais discretos
+- Classe `animate-fadeIn` adicionada ao `<div>` de cada item para a animação de entrada
 
 ---
 
 ## 5. Transições
 
-- **Entrada de novo item:** `fade-in` (opacity 0→1 + translateY -4px→0) em 200ms — via classe CSS `animate-fadeIn`
-- **Toggle pago/pendente:** borda e valor mudam com `transition-colors duration-300`
-- **Remoção de item:** sem animação (remoção imediata — adicionar fade-out exigiria atrasar o setState, complexidade não justificada)
+Animação via `tailwind.config.js` (melhor que CSS manual — purge-safe):
 
-Adicionar em `src/index.css`:
-```css
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 200ms ease-out;
-}
+```js
+// tailwind.config.js — adicionar em theme.extend:
+keyframes: {
+  fadeIn: {
+    '0%':   { opacity: '0', transform: 'translateY(-4px)' },
+    '100%': { opacity: '1', transform: 'translateY(0)' },
+  },
+},
+animation: {
+  fadeIn: 'fadeIn 200ms ease-out',
+},
 ```
+
+- **Entrada de novo item:** classe `animate-fadeIn` no `<div>` de cada item
+- **Toggle pago/pendente:** `transition-colors duration-300` já está no `<div>` do item (ver seção 4)
+- **Remoção de item:** sem animação (remoção imediata — fade-out exigiria atrasar setState)
 
 ---
 
 ## 6. Navegação
 
 **Bottom nav (mobile):**
-- Aba ativa: ícone com `bg-pantera-purple/20 rounded-full p-1` + label em `text-pantera-pink`
-- Ícones: `size={22}` (era 20)
-- Container: `backdrop-blur-md bg-pantera-black/90`
+- Aba ativa: ícone envolto em `<span className="bg-pantera-purple/20 rounded-full p-1">` + label em `text-pantera-pink`
+- Ícones: `size={22}` (era `size={20}`)
+- Container nav: `backdrop-blur-md bg-pantera-black/90` (backdrop-blur funciona out-of-the-box no Tailwind v3)
 
 **Header:**
 - Altura reduzida: `py-2` (era `py-3`)
-- Lucro do mês visível também no mobile — texto compacto: `Lucro: R$ X.XXX`
+- Lucro do mês: remover `hidden sm:flex` — mostrar em todas as telas, mas simplificar para uma linha:
+  ```tsx
+  {lucro !== undefined && (
+    <div className="flex flex-col items-end">
+      <span className="label text-[10px]">Lucro mês</span>
+      <span className={`font-display text-lg leading-tight ${lucro >= 0 ? 'text-income' : 'text-expense'}`}>
+        {formatCurrency(lucro)}
+      </span>
+    </div>
+  )}
+  ```
 
 ---
 
 ## 7. Formulários
 
-- Inputs ganham `<label>` acima com `text-[11px] label mb-1` (em vez de só placeholder)
-- Botões Entrada/Saída quando selecionados: `bg-income text-white` / `bg-expense text-white` (fundo sólido, em vez do atual semi-transparente)
+- Inputs ganham `<label>` com classe `label block mb-1` acima de cada campo
+- Botões Entrada/Saída quando selecionados: fundo sólido:
+  - Selecionado: `bg-income text-white border-income` / `bg-expense text-white border-expense`
+  - Não selecionado: `border-pantera-purple/20 text-pantera-lavender` (mantém atual)
 
 ---
 
-## 8. Arquivos a modificar
+## 8. Arquivos a modificar / deletar
 
 | Arquivo | O que muda |
 |---------|-----------|
-| `src/index.css` | Adicionar `@keyframes fadeIn` + `.animate-fadeIn` |
-| `src/components/SummaryCard.tsx` | Adicionar prop `primary` para card grande |
-| `src/components/NavTabs.tsx` | Aba ativa com fundo circular, backdrop-blur, ícone maior |
-| `src/components/Header.tsx` | Altura menor, lucro visível no mobile |
-| `src/modules/caixa/Caixa.tsx` | Nova hierarquia de cards (Saldo principal) |
-| `src/modules/caixa/CaixaForm.tsx` | Labels acima dos inputs, botões com fundo sólido |
-| `src/modules/caixa/CaixaList.tsx` | Borda colorida, remoção do badge, fade-in/out |
-| `src/modules/fiado/Fiado.tsx` | A Receber como card principal |
+| `tailwind.config.js` | Adicionar `keyframes.fadeIn` + `animation.fadeIn` |
+| `src/components/SummaryCard.tsx` | Adicionar prop `primary?: boolean` — controla `text-4xl` e layout |
+| `src/components/NavTabs.tsx` | Aba ativa com span circular, `backdrop-blur-md`, ícone `size={22}` |
+| `src/components/Header.tsx` | `py-2`, lucro visível em todas as telas |
+| `src/components/Badge.tsx` | **DELETAR** — fica sem uso após redesign |
+| `src/modules/caixa/Caixa.tsx` | Saldo como card primary + grid-cols-2 para secundários |
+| `src/modules/caixa/CaixaForm.tsx` | Labels acima dos inputs, botões Entrada/Saída com fundo sólido |
+| `src/modules/caixa/CaixaList.tsx` | Borda colorida `border-l-4`, remoção do badge, `animate-fadeIn` |
+| `src/modules/fiado/Fiado.tsx` | A Receber como card primary + grid-cols-2 |
 | `src/modules/fiado/FiadoForm.tsx` | Labels acima dos inputs |
-| `src/modules/fiado/FiadoList.tsx` | Borda colorida, remoção do badge, transições |
-| `src/modules/parceiros/Parceiros.tsx` | Parceiros Devem como card principal |
+| `src/modules/fiado/FiadoList.tsx` | Borda colorida, remoção de Badge, `animate-fadeIn` |
+| `src/modules/parceiros/Parceiros.tsx` | Parceiros Devem como card primary + grid-cols-2 |
 | `src/modules/parceiros/ParceiroForm.tsx` | Labels acima dos inputs |
-| `src/modules/parceiros/ParceiroList.tsx` | Borda colorida, remoção do badge, transições |
-| `src/App.tsx` | Padding lateral menor no mobile |
+| `src/modules/parceiros/ParceiroList.tsx` | Borda colorida, remoção de Badge, `animate-fadeIn` |
+| `src/App.tsx` | `px-2 py-3 sm:px-4` no `<main>` |
 
 ---
 
