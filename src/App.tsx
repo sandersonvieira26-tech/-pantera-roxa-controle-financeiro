@@ -4,9 +4,9 @@ import { supabase } from '@/lib/supabase'
 import Login from '@/modules/auth/Login'
 import Header from '@/components/Header'
 import NavTabs, { type Tab } from '@/components/NavTabs'
+import Caixa from '@/modules/caixa/Caixa'
 
-// Placeholder components - will be replaced in Tasks 9-13
-const Caixa = () => <div className="p-4 text-pantera-lavender">Módulo Caixa (em breve)</div>
+// Placeholder components - will be replaced in Tasks 10-13
 const Relatorio = () => <div className="p-4 text-pantera-lavender">Módulo Relatório (em breve)</div>
 const Fiado = () => <div className="p-4 text-pantera-lavender">Módulo Fiado (em breve)</div>
 const Parceiros = () => <div className="p-4 text-pantera-lavender">Módulo Parceiros (em breve)</div>
