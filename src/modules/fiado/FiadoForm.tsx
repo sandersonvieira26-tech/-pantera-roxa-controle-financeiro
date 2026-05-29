@@ -22,13 +22,25 @@ export default function FiadoForm({ onSubmit, loading }: FiadoFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card mb-4">
-      <h2 className="font-display text-xl text-white tracking-wide mb-3">REGISTRAR FIADO</h2>
+    <form onSubmit={handleSubmit} className="card mb-3">
+      <h2 className="font-display text-lg text-white tracking-wide mb-3">REGISTRAR FIADO</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-        <input className="input" placeholder="Nome do cliente" value={nome} onChange={e => setNome(e.target.value)} required />
-        <input className="input" placeholder="Descrição (ex: 2x 500ml banana)" value={descricao} onChange={e => setDescricao(e.target.value)} required />
-        <input className="input" type="number" step="0.01" min="0.01" placeholder="Valor (R$)" value={valor} onChange={e => setValor(e.target.value)} required />
-        <input className="input" type="date" value={data} onChange={e => setData(e.target.value)} required />
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Cliente</label>
+          <input className="input" placeholder="Nome do cliente" value={nome} onChange={e => setNome(e.target.value)} required />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Descrição</label>
+          <input className="input" placeholder="Ex: 2x 500ml banana" value={descricao} onChange={e => setDescricao(e.target.value)} required />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Valor (R$)</label>
+          <input className="input" type="number" step="0.01" min="0.01" placeholder="0,00" value={valor} onChange={e => setValor(e.target.value)} required />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Data</label>
+          <input className="input" type="date" value={data} onChange={e => setData(e.target.value)} required />
+        </div>
       </div>
       <button type="submit" className="btn-primary flex items-center gap-2" disabled={loading}>
         <PlusCircle size={16} />

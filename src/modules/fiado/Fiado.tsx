@@ -15,9 +15,12 @@ export default function Fiado() {
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <SummaryCard title="A Receber" value={formatCurrency(pendente)} accent="yellow" />
-        <SummaryCard title="Já Recebido" value={formatCurrency(recebido)} accent="green" />
+      <div className="mb-3">
+        <SummaryCard primary title="A Receber" value={formatCurrency(pendente)} accent="yellow" />
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <SummaryCard title="Já Recebido" value={formatCurrency(recebido)} accent="green" />
+          <SummaryCard title="Total" value={formatCurrency(pendente + recebido)} accent="purple" />
+        </div>
       </div>
 
       {(add.error || togglePago.error || remove.error) && (

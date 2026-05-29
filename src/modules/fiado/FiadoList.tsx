@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Trash2, CheckCircle, XCircle } from 'lucide-react'
-import Badge from '@/components/Badge'
 import EmptyState from '@/components/EmptyState'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { formatCurrency, formatDate } from '@/utils/format'
@@ -26,25 +25,28 @@ export default function FiadoList({ items, search, onToggle, onDelete }: FiadoLi
 
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {filtered.map(item => (
-          <div key={item.id} className="card flex items-center gap-3 py-3">
+          <div
+            key={item.id}
+            className={`bg-pantera-card rounded-xl py-2.5 px-3 flex items-center gap-3 border-l-4 transition-colors duration-300 animate-fadeIn
+              ${item.pago ? 'border-income' : 'border-pending'}`}
+          >
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-white text-sm font-medium">{item.nome_cliente}</span>
-                <Badge variant={item.pago ? 'paid' : 'pending'}>{item.pago ? 'PAGO' : 'PENDENTE'}</Badge>
-              </div>
-              <p className="text-pantera-lavender text-xs truncate mt-0.5">{item.descricao} · {formatDate(item.data)}</p>
+              <p className="text-white text-sm font-medium">{item.nome_cliente}</p>
+              <p className="text-pantera-lavender/70 text-xs truncate mt-0.5">{item.descricao} · {formatDate(item.data)}</p>
             </div>
-            <span className="font-semibold text-sm text-white shrink-0">{formatCurrency(item.valor)}</span>
+            <span className={`font-semibold text-sm shrink-0 ${item.pago ? 'text-income' : 'text-pending'}`}>
+              {formatCurrency(item.valor)}
+            </span>
             <button
               onClick={() => onToggle(item.id, !item.pago)}
-              className={`p-1.5 rounded-lg transition-colors shrink-0 ${item.pago ? 'text-income/60 hover:text-expense' : 'text-pending hover:text-income'}`}
+              className={`p-1 rounded-lg transition-colors shrink-0 ${item.pago ? 'text-income/60 hover:text-expense' : 'text-pending hover:text-income'}`}
               title={item.pago ? 'Marcar como pendente' : 'Marcar como pago'}
             >
-              {item.pago ? <XCircle size={18} /> : <CheckCircle size={18} />}
+              {item.pago ? <XCircle size={16} /> : <CheckCircle size={16} />}
             </button>
-            <button onClick={() => setDeleteId(item.id)} className="btn-danger p-1.5 shrink-0">
+            <button onClick={() => setDeleteId(item.id)} className="btn-danger p-1 shrink-0">
               <Trash2 size={15} />
             </button>
           </div>
