@@ -13,10 +13,12 @@ export default function Caixa() {
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <SummaryCard title="Entradas" value={formatCurrency(entradas)} accent="green" />
-        <SummaryCard title="Saídas" value={formatCurrency(saidas)} accent="red" />
-        <SummaryCard title="Saldo" value={formatCurrency(saldo)} accent={saldo >= 0 ? 'green' : 'red'} />
+      <div className="mb-3">
+        <SummaryCard primary title="Saldo" value={formatCurrency(saldo)} accent={saldo >= 0 ? 'green' : 'red'} />
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <SummaryCard title="Entradas" value={formatCurrency(entradas)} accent="green" />
+          <SummaryCard title="Saídas" value={formatCurrency(saidas)} accent="red" />
+        </div>
       </div>
 
       {(add.error || remove.error) && (
@@ -25,15 +27,8 @@ export default function Caixa() {
         </div>
       )}
 
-      <CaixaForm
-        onSubmit={item => add.mutate(item)}
-        loading={add.isPending}
-      />
-
-      <CaixaList
-        items={items}
-        onDelete={id => remove.mutate(id)}
-      />
+      <CaixaForm onSubmit={item => add.mutate(item)} loading={add.isPending} />
+      <CaixaList items={items} onDelete={id => remove.mutate(id)} />
     </div>
   )
 }
