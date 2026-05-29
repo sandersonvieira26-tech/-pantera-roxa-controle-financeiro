@@ -24,13 +24,25 @@ export default function ParceiroForm({ onSubmit, loading }: ParceiroFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card mb-4">
-      <h2 className="font-display text-xl text-white tracking-wide mb-3">REGISTRAR ENTREGA</h2>
+    <form onSubmit={handleSubmit} className="card mb-3">
+      <h2 className="font-display text-lg text-white tracking-wide mb-3">REGISTRAR ENTREGA</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-        <input className="input" placeholder="Nome do parceiro" value={nome} onChange={e => setNome(e.target.value)} required />
-        <input className="input" type="date" value={data} onChange={e => setData(e.target.value)} required />
-        <input className="input" type="number" min="1" placeholder="Quantidade de garrafas" value={quantidade} onChange={e => setQuantidade(e.target.value)} required />
-        <input className="input" type="number" step="0.01" min="0.01" placeholder="Valor por garrafa (R$)" value={valorUnitario} onChange={e => setValorUnitario(e.target.value)} required />
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Parceiro</label>
+          <input className="input" placeholder="Nome do parceiro" value={nome} onChange={e => setNome(e.target.value)} required />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Data</label>
+          <input className="input" type="date" value={data} onChange={e => setData(e.target.value)} required />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Qtd. de garrafas</label>
+          <input className="input" type="number" min="1" placeholder="0" value={quantidade} onChange={e => setQuantidade(e.target.value)} required />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Valor por garrafa (R$)</label>
+          <input className="input" type="number" step="0.01" min="0.01" placeholder="0,00" value={valorUnitario} onChange={e => setValorUnitario(e.target.value)} required />
+        </div>
       </div>
       {total > 0 && (
         <p className="text-pantera-lavender text-sm mb-3">
