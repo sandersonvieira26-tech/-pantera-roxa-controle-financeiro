@@ -36,7 +36,7 @@ export default function LimparTudoDialog({ onClose }: LimparTudoDialogProps) {
 
       await queryClient.invalidateQueries()
       if (mountedRef.current) onClose()
-    } catch (e: any) {
+    } catch {
       if (mountedRef.current) setError('Erro ao limpar dados. Tente novamente.')
     } finally {
       if (mountedRef.current) setLoading(false)

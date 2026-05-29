@@ -20,6 +20,12 @@ export default function Fiado() {
         <SummaryCard title="Já Recebido" value={formatCurrency(recebido)} accent="green" />
       </div>
 
+      {(add.error || togglePago.error || remove.error) && (
+        <div className="text-expense text-sm bg-expense/10 rounded-lg px-3 py-2 mb-3">
+          Erro ao salvar. Verifique sua conexão e tente novamente.
+        </div>
+      )}
+
       <FiadoForm onSubmit={item => add.mutate(item)} loading={add.isPending} />
 
       <div className="relative mb-3">

@@ -1,5 +1,11 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+
+// jspdf-autotable adds lastAutoTable to the jsPDF instance at runtime
+// but doesn't extend the TypeScript types — this interface bridges the gap
+interface JsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: { finalY: number }
+}
 import type { Lancamento, Fiado, Parceiro } from '@/types'
 import { formatCurrency, formatDate } from './format'
 
@@ -63,7 +69,7 @@ export function exportPDF(lancamentos: Lancamento[], fiados: Fiado[], parceiros:
     styles: { fontSize: 9 },
   })
 
-  const afterLanc = (doc as any).lastAutoTable.finalY + 8
+  const afterLanc = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 8
   doc.setFontSize(12)
   doc.setTextColor(170, 0, 255)
   doc.text('FIADOS', 14, afterLanc)
@@ -75,7 +81,7 @@ export function exportPDF(lancamentos: Lancamento[], fiados: Fiado[], parceiros:
     styles: { fontSize: 9 },
   })
 
-  const afterFiad = (doc as any).lastAutoTable.finalY + 8
+  const afterFiad = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 8
   doc.setFontSize(12)
   doc.setTextColor(170, 0, 255)
   doc.text('PARCEIROS', 14, afterFiad)

@@ -19,6 +19,12 @@ export default function Caixa() {
         <SummaryCard title="Saldo" value={formatCurrency(saldo)} accent={saldo >= 0 ? 'green' : 'red'} />
       </div>
 
+      {(add.error || remove.error) && (
+        <div className="text-expense text-sm bg-expense/10 rounded-lg px-3 py-2 mb-3">
+          Erro ao salvar. Verifique sua conexão e tente novamente.
+        </div>
+      )}
+
       <CaixaForm
         onSubmit={item => add.mutate(item)}
         loading={add.isPending}
