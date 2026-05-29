@@ -8,9 +8,9 @@ import Caixa from '@/modules/caixa/Caixa'
 import Relatorio from '@/modules/relatorio/Relatorio'
 import Fiado from '@/modules/fiado/Fiado'
 import Parceiros from '@/modules/parceiros/Parceiros'
-const Estoque = () => <div className="p-4 text-pantera-lavender">Módulo Estoque (em breve)</div>
-const ExportModal = ({ onClose }: { onClose: () => void }) => <div onClick={onClose} className="fixed inset-0 bg-black/50 flex items-center justify-center"><div className="card">Export (em breve) <button onClick={onClose}>X</button></div></div>
-const LimparTudoDialog = ({ onClose }: { onClose: () => void }) => <div onClick={onClose} className="fixed inset-0 bg-black/50 flex items-center justify-center"><div className="card">Limpar (em breve) <button onClick={onClose}>X</button></div></div>
+import Estoque from '@/modules/estoque/Estoque'
+import ExportModal from '@/utils/ExportModal'
+import LimparTudoDialog from '@/utils/LimparTudoDialog'
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
