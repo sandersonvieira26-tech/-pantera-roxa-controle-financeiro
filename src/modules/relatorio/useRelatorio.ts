@@ -4,22 +4,9 @@ import { supabase } from '@/lib/supabase'
 import { filterByPeriod } from '@/utils/format'
 import { calcFaturamento, calcCustos, calcLucro, calcMargem, calcAReceber, buildChartData } from './calcRelatorio'
 import { fetchLancamentos, LANCAMENTOS_KEY } from '@/modules/caixa/useLancamentos'
+import { fetchFiados, FIADOS_KEY } from '@/modules/fiado/useFiados'
+import { fetchParceiros, PARCEIROS_KEY } from '@/modules/parceiros/useParceiros'
 import type { Lancamento, Fiado, Parceiro, Periodo } from '@/types'
-
-// These will be replaced with proper imports from useFiados/useParceiros once Tasks 11-12 are done.
-async function fetchFiadosLocal(): Promise<Fiado[]> {
-  const { data, error } = await supabase.from('fiados').select('*')
-    .order('pago', { ascending: true }).order('data', { ascending: false })
-  if (error) throw error
-  return data
-}
-
-async function fetchParceirosLocal(): Promise<Parceiro[]> {
-  const { data, error } = await supabase.from('parceiros').select('*')
-    .order('pago', { ascending: true }).order('data', { ascending: false })
-  if (error) throw error
-  return data
-}
 
 export function useRelatorio(periodo: Periodo) {
   const qc = useQueryClient()
@@ -30,13 +17,13 @@ export function useRelatorio(periodo: Periodo) {
   })
 
   const { data: allFiad = [] } = useQuery<Fiado[]>({
-    queryKey: ['fiados'],
-    queryFn: fetchFiadosLocal,
+    queryKey: FIADOS_KEY,
+    queryFn: fetchFiados,
   })
 
   const { data: allParc = [] } = useQuery<Parceiro[]>({
-    queryKey: ['parceiros'],
-    queryFn: fetchParceirosLocal,
+    queryKey: PARCEIROS_KEY,
+    queryFn: fetchParceiros,
   })
 
   useEffect(() => {

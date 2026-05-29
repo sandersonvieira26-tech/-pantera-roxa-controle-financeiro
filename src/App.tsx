@@ -6,10 +6,8 @@ import Header from '@/components/Header'
 import NavTabs, { type Tab } from '@/components/NavTabs'
 import Caixa from '@/modules/caixa/Caixa'
 import Relatorio from '@/modules/relatorio/Relatorio'
-
-// Placeholder components - will be replaced in Tasks 11-13
-const Fiado = () => <div className="p-4 text-pantera-lavender">Módulo Fiado (em breve)</div>
-const Parceiros = () => <div className="p-4 text-pantera-lavender">Módulo Parceiros (em breve)</div>
+import Fiado from '@/modules/fiado/Fiado'
+import Parceiros from '@/modules/parceiros/Parceiros'
 const Estoque = () => <div className="p-4 text-pantera-lavender">Módulo Estoque (em breve)</div>
 const ExportModal = ({ onClose }: { onClose: () => void }) => <div onClick={onClose} className="fixed inset-0 bg-black/50 flex items-center justify-center"><div className="card">Export (em breve) <button onClick={onClose}>X</button></div></div>
 const LimparTudoDialog = ({ onClose }: { onClose: () => void }) => <div onClick={onClose} className="fixed inset-0 bg-black/50 flex items-center justify-center"><div className="card">Limpar (em breve) <button onClick={onClose}>X</button></div></div>
