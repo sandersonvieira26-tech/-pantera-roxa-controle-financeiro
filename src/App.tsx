@@ -39,7 +39,7 @@ export default function App() {
       <Header onExport={() => setShowExport(true)} onLimparTudo={() => setShowLimpar(true)} />
       <NavTabs active={tab} onChange={setTab} />
 
-      <main className="max-w-3xl mx-auto px-4 py-4">
+      <main className="max-w-3xl mx-auto px-2 py-3 sm:px-4">
         {tab === 'caixa' && <Caixa />}
         {tab === 'relatorio' && <Relatorio />}
         {tab === 'fiado' && <Fiado />}
