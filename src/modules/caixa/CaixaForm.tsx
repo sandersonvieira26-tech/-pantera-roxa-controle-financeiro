@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { PlusCircle } from 'lucide-react'
 import { todayISO } from '@/utils/format'
 import type { LancamentoInsert } from '@/types'

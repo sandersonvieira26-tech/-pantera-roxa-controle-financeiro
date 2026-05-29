@@ -3,7 +3,9 @@ import { formatCurrency } from '@/utils/format'
 
 interface ChartEntry { label: string; faturamento: number; lucro: number }
 
-const tooltipFormatter = (value: number) => formatCurrency(value)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tooltipFormatter = (value: any) =>
+  typeof value === 'number' ? formatCurrency(value) : String(value ?? '')
 
 export default function RelatorioChart({ data }: { data: ChartEntry[] }) {
   return (
