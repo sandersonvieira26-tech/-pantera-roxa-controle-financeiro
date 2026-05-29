@@ -41,8 +41,8 @@ export default function Header({ onExport, onLimparTudo }: HeaderProps) {
   }
 
   return (
-    <header className="bg-pantera-darker border-b border-pantera-purple/20 px-4 py-3 sticky top-0 z-40">
-      <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+    <header className="bg-pantera-darker border-b border-pantera-purple/20 px-4 py-2 sticky top-0 z-40">
+      <div className="max-w-3xl mx-auto flex items-center justify-between gap-2">
         <div className="min-w-0">
           <h1 className="font-display text-2xl sm:text-3xl text-pantera-purple tracking-wider leading-none">
             PANTERA ROXA
@@ -53,9 +53,9 @@ export default function Header({ onExport, onLimparTudo }: HeaderProps) {
         </div>
 
         {lucro !== undefined && (
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="label text-[10px]">Lucro do mês</span>
-            <span className={`font-display text-xl leading-tight ${lucro >= 0 ? 'text-income' : 'text-expense'}`}>
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] uppercase tracking-widest text-pantera-lavender">Lucro mês</span>
+            <span className={`font-display text-lg leading-tight ${lucro >= 0 ? 'text-income' : 'text-expense'}`}>
               {formatCurrency(lucro)}
             </span>
           </div>
