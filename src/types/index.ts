@@ -60,3 +60,13 @@ export const SABOR_LABELS: Record<Sabor, string> = {
   morango: 'Morango',
   maracuja: 'Maracujá',
 }
+
+export type Tab = 'caixa' | 'relatorio' | 'fiado' | 'parceiros' | 'estoque'
+
+export const TAB_LABELS: Record<Tab, string> = {
+  caixa: 'CAIXA',
+  relatorio: 'RELATÓRIO',
+  fiado: 'FIADO',
+  parceiros: 'PARCEIROS',
+  estoque: 'ESTOQUE',
+}

@@ -1,6 +1,5 @@
 import { Wallet, BarChart2, Clock, Users, Package } from 'lucide-react'
-
-export type Tab = 'caixa' | 'relatorio' | 'fiado' | 'parceiros' | 'estoque'
+import type { Tab } from '@/types'
 
 const TABS: { id: Tab; label: string; Icon: typeof Wallet }[] = [
   { id: 'caixa', label: 'Caixa', Icon: Wallet },
