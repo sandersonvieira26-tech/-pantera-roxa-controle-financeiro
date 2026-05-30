@@ -1,32 +1,7 @@
 import { LogOut, Download, Trash2 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { formatCurrency, startOfMonth } from '@/utils/format'
-import type { Lancamento, Fiado, Parceiro } from '@/types'
-
-function useLucroMes() {
-  return useQuery({
-    queryKey: ['lucro-mes'],
-    queryFn: async () => {
-      const mesStart = startOfMonth()
-      const [{ data: lanc }, { data: fiad }, { data: parc }] = await Promise.all([
-        supabase.from('lancamentos').select('tipo,valor,data').gte('data', mesStart),
-        supabase.from('fiados').select('valor,data,pago').gte('data', mesStart),
-        supabase.from('parceiros').select('total,data,pago').gte('data', mesStart),
-      ])
-      const entradas = (lanc as Lancamento[] || [])
-        .filter(l => l.tipo === 'entrada').reduce((s, l) => s + l.valor, 0)
-      const saidas = (lanc as Lancamento[] || [])
-        .filter(l => l.tipo === 'saida').reduce((s, l) => s + l.valor, 0)
-      const fiados = (fiad as Fiado[] || [])
-        .filter(f => f.pago).reduce((s, f) => s + f.valor, 0)
-      const parceiros = (parc as Parceiro[] || [])
-        .filter(p => p.pago).reduce((s, p) => s + p.total, 0)
-      return (entradas + fiados + parceiros) - saidas
-    },
-    staleTime: 0,
-  })
-}
+import { formatCurrency } from '@/utils/format'
+import { useLucroMes } from '@/hooks/useLucroMes'
 
 interface HeaderProps {
   onExport: () => void
