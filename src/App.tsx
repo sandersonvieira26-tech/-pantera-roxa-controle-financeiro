@@ -37,7 +37,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-pantera-black pb-20 sm:pb-0">
-      <Header onExport={() => setShowExport(true)} onLimparTudo={() => setShowLimpar(true)} />
+      <Header activeTab={tab} onExport={() => setShowExport(true)} onLimparTudo={() => setShowLimpar(true)} />
       <NavTabs active={tab} onChange={setTab} />
 
       <main className="max-w-3xl mx-auto px-2 py-3 sm:px-4">
