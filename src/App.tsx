@@ -3,8 +3,8 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import Login from '@/modules/auth/Login'
 import Header from '@/components/Header'
+import Sidebar from '@/components/Sidebar'
 import NavTabs from '@/components/NavTabs'
-import type { Tab } from '@/types'
 import Caixa from '@/modules/caixa/Caixa'
 import Relatorio from '@/modules/relatorio/Relatorio'
 import Fiado from '@/modules/fiado/Fiado'
@@ -12,6 +12,7 @@ import Parceiros from '@/modules/parceiros/Parceiros'
 import Estoque from '@/modules/estoque/Estoque'
 import ExportModal from '@/utils/ExportModal'
 import LimparTudoDialog from '@/utils/LimparTudoDialog'
+import type { Tab } from '@/types'
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
@@ -36,17 +37,30 @@ export default function App() {
   if (!session) return <Login />
 
   return (
-    <div className="min-h-screen bg-pantera-black pb-20 sm:pb-0">
-      <Header activeTab={tab} onExport={() => setShowExport(true)} onLimparTudo={() => setShowLimpar(true)} />
-      <NavTabs active={tab} onChange={setTab} />
+    <div className="sm:flex min-h-screen bg-pantera-black">
+      <Sidebar
+        active={tab}
+        onChange={setTab}
+        onExport={() => setShowExport(true)}
+        onLimparTudo={() => setShowLimpar(true)}
+      />
 
-      <main className="max-w-3xl mx-auto px-2 py-3 sm:px-4">
-        {tab === 'caixa' && <Caixa />}
-        {tab === 'relatorio' && <Relatorio />}
-        {tab === 'fiado' && <Fiado />}
-        {tab === 'parceiros' && <Parceiros />}
-        {tab === 'estoque' && <Estoque />}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 pb-20 sm:pb-0">
+        <Header
+          activeTab={tab}
+          onExport={() => setShowExport(true)}
+          onLimparTudo={() => setShowLimpar(true)}
+        />
+        <NavTabs active={tab} onChange={setTab} />
+
+        <main className="max-w-3xl mx-auto w-full px-2 py-3 sm:px-4">
+          {tab === 'caixa' && <Caixa />}
+          {tab === 'relatorio' && <Relatorio />}
+          {tab === 'fiado' && <Fiado />}
+          {tab === 'parceiros' && <Parceiros />}
+          {tab === 'estoque' && <Estoque />}
+        </main>
+      </div>
 
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
       {showLimpar && <LimparTudoDialog onClose={() => setShowLimpar(false)} />}
