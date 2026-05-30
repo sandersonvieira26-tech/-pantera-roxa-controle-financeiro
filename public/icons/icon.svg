@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#AA00FF"/>
+
+  <!-- Footpad central -->
+  <ellipse cx="256" cy="340" rx="100" ry="85" fill="#FFFFFF"/>
+
+  <!-- Toe pad 1 (interno esquerdo) -->
+  <ellipse cx="172" cy="210" rx="38" ry="48" fill="#FFFFFF"/>
+
+  <!-- Toe pad 2 (externo esquerdo) -->
+  <ellipse cx="100" cy="270" rx="34" ry="42" fill="#FFFFFF"/>
+
+  <!-- Toe pad 3 (interno direito) -->
+  <ellipse cx="340" cy="210" rx="38" ry="48" fill="#FFFFFF"/>
+
+  <!-- Toe pad 4 (externo direito) -->
+  <ellipse cx="412" cy="270" rx="34" ry="42" fill="#FFFFFF"/>
+</svg>
