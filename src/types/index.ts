@@ -6,10 +6,30 @@ export interface Lancamento {
   valor: number
   data: string // YYYY-MM-DD
   fiado_id: string | null // preenchido quando a entrada vem de um fiado pago
+  categoria_id: string | null // categoria da saída (NULL = "Sem categoria")
   created_at: string
 }
 
-export type LancamentoInsert = Omit<Lancamento, 'id' | 'user_id' | 'fiado_id' | 'created_at'>
+export type LancamentoInsert =
+  Omit<Lancamento, 'id' | 'user_id' | 'fiado_id' | 'categoria_id' | 'created_at'>
+  & { categoria_id?: string | null }
+
+export interface Categoria {
+  id: string
+  user_id: string
+  nome: string
+  created_at: string
+}
+
+export const CATEGORIAS_PADRAO = [
+  'Insumo',
+  'Embalagem',
+  'Transporte',
+  'Gás/Energia',
+  'Marketing',
+  'Equipamento',
+  'Outros',
+] as const
 
 export interface Fiado {
   id: string

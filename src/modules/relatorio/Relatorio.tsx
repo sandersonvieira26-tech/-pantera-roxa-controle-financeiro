@@ -14,7 +14,7 @@ const PERIODOS: { value: Periodo; label: string }[] = [
 
 export default function Relatorio() {
   const [periodo, setPeriodo] = useState<Periodo>('mes')
-  const { faturamento, custos, lucro, margem, aReceber, chartData } = useRelatorio(periodo)
+  const { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria } = useRelatorio(periodo)
 
   return (
     <div>
@@ -49,6 +49,27 @@ export default function Relatorio() {
       </div>
 
       <RelatorioChart data={chartData} />
+
+      {custosPorCategoria.length > 0 && (
+        <div className="card mt-3">
+          <p className="label mb-3">Custos por categoria</p>
+          <div className="space-y-2.5">
+            {custosPorCategoria.map(c => (
+              <div key={c.nome}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-white">{c.nome}</span>
+                  <span className="text-pantera-lavender">
+                    {formatCurrency(c.valor)} <span className="text-pantera-lavender/60">({c.pct.toFixed(0)}%)</span>
+                  </span>
+                </div>
+                <div className="h-1.5 bg-pantera-purple/15 rounded-full overflow-hidden">
+                  <div className="h-full bg-expense rounded-full" style={{ width: `${c.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

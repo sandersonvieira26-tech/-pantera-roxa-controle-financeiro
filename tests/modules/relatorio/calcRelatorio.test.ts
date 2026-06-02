@@ -6,14 +6,15 @@ import {
   calcMargem,
   calcAReceber,
   buildChartData,
+  calcCustosPorCategoria,
 } from '@/modules/relatorio/calcRelatorio'
-import type { Lancamento, Fiado, Parceiro } from '@/types'
+import type { Lancamento, Fiado, Parceiro, Categoria } from '@/types'
 
 const today = new Date().toLocaleDateString('en-CA')
 
 const lancamentos: Lancamento[] = [
-  { id: '1', user_id: 'u', tipo: 'entrada', descricao: 'venda', valor: 100, data: today, fiado_id: null, created_at: '' },
-  { id: '2', user_id: 'u', tipo: 'saida', descricao: 'compra', valor: 40, data: today, fiado_id: null, created_at: '' },
+  { id: '1', user_id: 'u', tipo: 'entrada', descricao: 'venda', valor: 100, data: today, fiado_id: null, categoria_id: null, created_at: '' },
+  { id: '2', user_id: 'u', tipo: 'saida', descricao: 'compra', valor: 40, data: today, fiado_id: null, categoria_id: null, created_at: '' },
 ]
 
 const fiados: Fiado[] = [
@@ -38,7 +39,7 @@ describe('calcFaturamento', () => {
     // O trigger cria uma entrada com fiado_id; ela conta como entrada normal.
     const comFiado: Lancamento[] = [
       ...lancamentos,
-      { id: '7', user_id: 'u', tipo: 'entrada', descricao: 'Fiado pago — Ana', valor: 30, data: today, fiado_id: '3', created_at: '' },
+      { id: '7', user_id: 'u', tipo: 'entrada', descricao: 'Fiado pago — Ana', valor: 30, data: today, fiado_id: '3', categoria_id: null, created_at: '' },
     ]
     expect(calcFaturamento(comFiado, parceiros)).toBe(230) // 100 + 30 (fiado) + 100
   })
@@ -71,6 +72,44 @@ describe('calcMargem', () => {
 describe('calcAReceber', () => {
   it('soma fiados pendentes + parceiros pendentes', () => {
     expect(calcAReceber(fiados, parceiros)).toBe(70) // 20 + 50
+  })
+})
+
+describe('calcCustosPorCategoria', () => {
+  const categorias: Categoria[] = [
+    { id: 'c1', user_id: 'u', nome: 'Insumo', created_at: '' },
+    { id: 'c2', user_id: 'u', nome: 'Embalagem', created_at: '' },
+  ]
+  const saidas: Lancamento[] = [
+    { id: 's1', user_id: 'u', tipo: 'saida', descricao: 'polpa', valor: 60, data: today, fiado_id: null, categoria_id: 'c1', created_at: '' },
+    { id: 's2', user_id: 'u', tipo: 'saida', descricao: 'garrafa', valor: 30, data: today, fiado_id: null, categoria_id: 'c2', created_at: '' },
+    { id: 's3', user_id: 'u', tipo: 'saida', descricao: 'avulso', valor: 10, data: today, fiado_id: null, categoria_id: null, created_at: '' },
+    { id: 's4', user_id: 'u', tipo: 'entrada', descricao: 'venda', valor: 999, data: today, fiado_id: null, categoria_id: null, created_at: '' },
+  ]
+
+  it('agrupa por categoria, calcula % e ordena do maior pro menor', () => {
+    const r = calcCustosPorCategoria(saidas, categorias)
+    expect(r).toEqual([
+      { nome: 'Insumo', valor: 60, pct: 60 },
+      { nome: 'Embalagem', valor: 30, pct: 30 },
+      { nome: 'Sem categoria', valor: 10, pct: 10 },
+    ])
+  })
+
+  it('ignora entradas (só conta saídas)', () => {
+    const r = calcCustosPorCategoria(saidas, categorias)
+    expect(r.reduce((s, c) => s + c.valor, 0)).toBe(100)
+  })
+
+  it('retorna lista vazia quando não há saídas', () => {
+    expect(calcCustosPorCategoria([lancamentos[0]], categorias)).toEqual([])
+  })
+
+  it('categoria_id órfão (sem nome) cai em "Sem categoria"', () => {
+    const orfao: Lancamento[] = [
+      { id: 'x', user_id: 'u', tipo: 'saida', descricao: 'z', valor: 50, data: today, fiado_id: null, categoria_id: 'inexistente', created_at: '' },
+    ]
+    expect(calcCustosPorCategoria(orfao, categorias)).toEqual([{ nome: 'Sem categoria', valor: 50, pct: 100 }])
   })
 })
 

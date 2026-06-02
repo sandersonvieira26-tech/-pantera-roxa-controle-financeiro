@@ -6,16 +6,24 @@ import autoTable from 'jspdf-autotable'
 interface JsPDFWithAutoTable extends jsPDF {
   lastAutoTable: { finalY: number }
 }
-import type { Lancamento, Fiado, Parceiro } from '@/types'
+import type { Lancamento, Fiado, Parceiro, Categoria } from '@/types'
 import { formatCurrency, formatDate } from './format'
 
-export function exportCSV(lancamentos: Lancamento[], fiados: Fiado[], parceiros: Parceiro[]) {
+// Nome da categoria para exibir numa linha de lançamento.
+// Entradas não têm categoria; saídas sem categoria viram "Sem categoria".
+function categoriaLabel(l: Lancamento, nomePorId: Map<string, string>): string {
+  if (l.tipo !== 'saida') return ''
+  return (l.categoria_id && nomePorId.get(l.categoria_id)) || 'Sem categoria'
+}
+
+export function exportCSV(lancamentos: Lancamento[], fiados: Fiado[], parceiros: Parceiro[], categorias: Categoria[] = []) {
   const lines: string[] = []
+  const nomePorId = new Map(categorias.map(c => [c.id, c.nome]))
 
   lines.push('LANÇAMENTOS')
-  lines.push('Data,Tipo,Descrição,Valor')
+  lines.push('Data,Tipo,Categoria,Descrição,Valor')
   lancamentos.forEach(l => {
-    lines.push(`${formatDate(l.data)},${l.tipo},"${l.descricao}",${l.valor.toFixed(2)}`)
+    lines.push(`${formatDate(l.data)},${l.tipo},"${categoriaLabel(l, nomePorId)}","${l.descricao}",${l.valor.toFixed(2)}`)
   })
 
   lines.push('')
@@ -41,10 +49,11 @@ export function exportCSV(lancamentos: Lancamento[], fiados: Fiado[], parceiros:
   URL.revokeObjectURL(url)
 }
 
-export function exportPDF(lancamentos: Lancamento[], fiados: Fiado[], parceiros: Parceiro[]) {
+export function exportPDF(lancamentos: Lancamento[], fiados: Fiado[], parceiros: Parceiro[], categorias: Categoria[] = []) {
   const doc = new jsPDF()
   const headerColor: [number, number, number] = [170, 0, 255]
   const today = formatDate(new Date().toLocaleDateString('en-CA'))
+  const nomePorId = new Map(categorias.map(c => [c.id, c.nome]))
 
   doc.setFontSize(22)
   doc.setTextColor(170, 0, 255)
@@ -63,8 +72,8 @@ export function exportPDF(lancamentos: Lancamento[], fiados: Fiado[], parceiros:
 
   autoTable(doc, {
     startY: 52,
-    head: [['Data', 'Tipo', 'Descrição', 'Valor']],
-    body: lancamentos.map(l => [formatDate(l.data), l.tipo, l.descricao, formatCurrency(l.valor)]),
+    head: [['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor']],
+    body: lancamentos.map(l => [formatDate(l.data), l.tipo, categoriaLabel(l, nomePorId), l.descricao, formatCurrency(l.valor)]),
     headStyles: { fillColor: headerColor },
     styles: { fontSize: 9 },
   })

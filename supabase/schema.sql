@@ -111,5 +111,27 @@ CREATE TRIGGER trg_fiado_pago
   FOR EACH ROW
   EXECUTE FUNCTION sync_fiado_lancamento();
 
+-- =============================================
+-- Categorias de saída
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS categorias (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users NOT NULL,
+  nome        TEXT NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, nome)
+);
+ALTER TABLE categorias ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "categorias: owner full access"
+  ON categorias FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Liga a saída à categoria. NULL = "Sem categoria".
+-- ON DELETE RESTRICT: o banco impede apagar categoria em uso.
+ALTER TABLE lancamentos
+  ADD COLUMN IF NOT EXISTS categoria_id UUID REFERENCES categorias(id) ON DELETE RESTRICT;
+
 -- Habilitar Realtime (rodar separadamente se necessário)
--- No Supabase Dashboard → Database → Replication → habilitar para as 4 tabelas
+-- No Supabase Dashboard → Database → Replication → habilitar para as tabelas

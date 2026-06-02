@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { PlusCircle } from 'lucide-react'
 import { todayISO } from '@/utils/format'
+import { useCategorias } from './useCategorias'
 import type { LancamentoInsert } from '@/types'
 
 interface CaixaFormProps {
@@ -14,13 +15,23 @@ export default function CaixaForm({ onSubmit, loading }: CaixaFormProps) {
   const [descricao, setDescricao] = useState('')
   const [valor, setValor] = useState('')
   const [data, setData] = useState(todayISO())
+  const [categoriaId, setCategoriaId] = useState('')
+
+  const { data: categorias = [] } = useCategorias()
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    onSubmit({ tipo, descricao, valor: parseFloat(valor), data })
+    onSubmit({
+      tipo,
+      descricao,
+      valor: parseFloat(valor),
+      data,
+      categoria_id: tipo === 'saida' && categoriaId ? categoriaId : null,
+    })
     setDescricao('')
     setValor('')
     setData(todayISO())
+    setCategoriaId('')
   }
 
   return (
@@ -85,6 +96,22 @@ export default function CaixaForm({ onSubmit, loading }: CaixaFormProps) {
           />
         </div>
       </div>
+
+      {tipo === 'saida' && (
+        <div className="mb-3">
+          <label className="text-[11px] uppercase tracking-widest text-pantera-lavender block mb-1">Categoria</label>
+          <select
+            className="input"
+            value={categoriaId}
+            onChange={e => setCategoriaId(e.target.value)}
+          >
+            <option value="">Sem categoria</option>
+            {categorias.map(c => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <button type="submit" className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2" disabled={loading}>
         <PlusCircle size={16} />

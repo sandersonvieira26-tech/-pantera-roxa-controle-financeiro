@@ -1,11 +1,15 @@
+import { useState } from 'react'
+import { Tag } from 'lucide-react'
 import SummaryCard from '@/components/SummaryCard'
 import CaixaForm from './CaixaForm'
 import CaixaList from './CaixaList'
+import CategoriasModal from './CategoriasModal'
 import { useLancamentos } from './useLancamentos'
 import { formatCurrency } from '@/utils/format'
 
 export default function Caixa() {
   const { data: items = [], add, remove } = useLancamentos()
+  const [showCategorias, setShowCategorias] = useState(false)
 
   const entradas = items.filter(i => i.tipo === 'entrada').reduce((s, i) => s + i.valor, 0)
   const saidas = items.filter(i => i.tipo === 'saida').reduce((s, i) => s + i.valor, 0)
@@ -21,6 +25,13 @@ export default function Caixa() {
         </div>
       </div>
 
+      <div className="flex justify-end mb-3">
+        <button onClick={() => setShowCategorias(true)} className="btn-ghost flex items-center gap-2 text-sm">
+          <Tag size={15} />
+          Gerenciar categorias
+        </button>
+      </div>
+
       {(add.error || remove.error) && (
         <div className="text-expense text-sm bg-expense/10 rounded-lg px-3 py-2 mb-3">
           Erro ao salvar. Verifique sua conexão e tente novamente.
@@ -29,6 +40,8 @@ export default function Caixa() {
 
       <CaixaForm onSubmit={item => add.mutate(item)} loading={add.isPending} />
       <CaixaList items={items} onDelete={id => remove.mutate(id)} />
+
+      {showCategorias && <CategoriasModal onClose={() => setShowCategorias(false)} />}
     </div>
   )
 }

@@ -1,5 +1,33 @@
-import type { Lancamento, Fiado, Parceiro } from '@/types'
+import type { Lancamento, Fiado, Parceiro, Categoria } from '@/types'
 import { last7Days, shortDate } from '@/utils/format'
+
+export interface CustoCategoria {
+  nome: string
+  valor: number
+  pct: number
+}
+
+const SEM_CATEGORIA = 'Sem categoria'
+
+export function calcCustosPorCategoria(
+  lancamentos: Lancamento[],
+  categorias: Categoria[],
+): CustoCategoria[] {
+  const nomePorId = new Map(categorias.map(c => [c.id, c.nome]))
+  const saidas = lancamentos.filter(l => l.tipo === 'saida')
+  const total = saidas.reduce((s, l) => s + l.valor, 0)
+  if (total === 0) return []
+
+  const somaPorNome = new Map<string, number>()
+  for (const l of saidas) {
+    const nome = (l.categoria_id && nomePorId.get(l.categoria_id)) || SEM_CATEGORIA
+    somaPorNome.set(nome, (somaPorNome.get(nome) ?? 0) + l.valor)
+  }
+
+  return [...somaPorNome.entries()]
+    .map(([nome, valor]) => ({ nome, valor, pct: (valor / total) * 100 }))
+    .sort((a, b) => b.valor - a.valor)
+}
 
 export function calcFaturamento(
   lancamentos: Lancamento[],

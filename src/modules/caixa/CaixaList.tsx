@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react'
 import EmptyState from '@/components/EmptyState'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { formatCurrency, formatDate } from '@/utils/format'
+import { useCategorias } from './useCategorias'
 import type { Lancamento } from '@/types'
 
 interface CaixaListProps {
@@ -12,6 +13,8 @@ interface CaixaListProps {
 
 export default function CaixaList({ items, onDelete }: CaixaListProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const { data: categorias = [] } = useCategorias()
+  const nomeCategoria = (id: string | null) => categorias.find(c => c.id === id)?.nome
 
   if (items.length === 0) {
     return <EmptyState message="Nenhum lançamento ainda" />
@@ -35,6 +38,11 @@ export default function CaixaList({ items, onDelete }: CaixaListProps) {
                     title="Lançado automaticamente ao marcar o fiado como pago. Para remover, desmarque o fiado."
                   >
                     Fiado
+                  </span>
+                )}
+                {item.tipo === 'saida' && nomeCategoria(item.categoria_id) && (
+                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-pantera-lavender bg-pantera-purple/20 rounded px-1.5 py-0.5">
+                    {nomeCategoria(item.categoria_id)}
                   </span>
                 )}
               </div>
