@@ -151,5 +151,27 @@ CREATE POLICY "precos: owner full access"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+-- =============================================
+-- Fiado rápido (clientes salvos + acúmulo por tamanho)
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS clientes (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users NOT NULL,
+  nome        TEXT NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, nome)
+);
+ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "clientes: owner full access"
+  ON clientes FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Quantidades por tamanho de uma retirada rápida. Fiados manuais ficam 0/0.
+ALTER TABLE fiados
+  ADD COLUMN IF NOT EXISTS qtd_300 INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS qtd_500 INTEGER NOT NULL DEFAULT 0;
+
 -- Habilitar Realtime (rodar separadamente se necessário)
 -- No Supabase Dashboard → Database → Replication → habilitar para as tabelas

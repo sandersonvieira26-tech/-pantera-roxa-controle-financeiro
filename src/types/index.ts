@@ -39,10 +39,21 @@ export interface Fiado {
   valor: number
   data: string
   pago: boolean
+  qtd_300: number // quantidades por tamanho na retirada rápida (manual = 0)
+  qtd_500: number
   created_at: string
 }
 
-export type FiadoInsert = Omit<Fiado, 'id' | 'user_id' | 'created_at'>
+export type FiadoInsert =
+  Omit<Fiado, 'id' | 'user_id' | 'qtd_300' | 'qtd_500' | 'created_at'>
+  & { qtd_300?: number; qtd_500?: number }
+
+export interface Cliente {
+  id: string
+  user_id: string
+  nome: string
+  created_at: string
+}
 
 export interface Parceiro {
   id: string

@@ -18,8 +18,8 @@ const lancamentos: Lancamento[] = [
 ]
 
 const fiados: Fiado[] = [
-  { id: '3', user_id: 'u', nome_cliente: 'Ana', descricao: 'x', valor: 30, data: today, pago: true, created_at: '' },
-  { id: '4', user_id: 'u', nome_cliente: 'Bob', descricao: 'y', valor: 20, data: today, pago: false, created_at: '' },
+  { id: '3', user_id: 'u', nome_cliente: 'Ana', descricao: 'x', valor: 30, data: today, pago: true, qtd_300: 0, qtd_500: 0, created_at: '' },
+  { id: '4', user_id: 'u', nome_cliente: 'Bob', descricao: 'y', valor: 20, data: today, pago: false, qtd_300: 0, qtd_500: 0, created_at: '' },
 ]
 
 const parceiros: Parceiro[] = [
