@@ -69,6 +69,16 @@ export interface EstoqueItem {
 
 export type EstoqueUpsert = Pick<EstoqueItem, 'sabor' | 'tamanho' | 'quantidade'>
 
+export interface Preco {
+  id: string
+  user_id: string
+  tamanho: Tamanho
+  preco: number
+  updated_at: string
+}
+
+export type PrecoUpsert = Pick<Preco, 'tamanho' | 'preco'>
+
 export type Periodo = 'hoje' | 'semana' | 'mes' | 'tudo'
 
 export const SABORES = ['banana', 'morango', 'maracuja'] as const

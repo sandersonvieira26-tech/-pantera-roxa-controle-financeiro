@@ -133,5 +133,23 @@ CREATE POLICY "categorias: owner full access"
 ALTER TABLE lancamentos
   ADD COLUMN IF NOT EXISTS categoria_id UUID REFERENCES categorias(id) ON DELETE RESTRICT;
 
+-- =============================================
+-- Preços por tamanho (venda rápida)
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS precos (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users NOT NULL,
+  tamanho     TEXT NOT NULL CHECK (tamanho IN ('300ml', '500ml')),
+  preco       NUMERIC(10,2) NOT NULL CHECK (preco > 0),
+  updated_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, tamanho)
+);
+ALTER TABLE precos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "precos: owner full access"
+  ON precos FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
 -- Habilitar Realtime (rodar separadamente se necessário)
 -- No Supabase Dashboard → Database → Replication → habilitar para as tabelas

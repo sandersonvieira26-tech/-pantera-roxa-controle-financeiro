@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Tag } from 'lucide-react'
+import { Tag, DollarSign } from 'lucide-react'
 import SummaryCard from '@/components/SummaryCard'
 import CaixaForm from './CaixaForm'
 import CaixaList from './CaixaList'
 import CategoriasModal from './CategoriasModal'
+import PrecosModal from './PrecosModal'
 import { useLancamentos } from './useLancamentos'
 import { formatCurrency } from '@/utils/format'
 
 export default function Caixa() {
   const { data: items = [], add, remove } = useLancamentos()
   const [showCategorias, setShowCategorias] = useState(false)
+  const [showPrecos, setShowPrecos] = useState(false)
 
   const entradas = items.filter(i => i.tipo === 'entrada').reduce((s, i) => s + i.valor, 0)
   const saidas = items.filter(i => i.tipo === 'saida').reduce((s, i) => s + i.valor, 0)
@@ -25,7 +27,11 @@ export default function Caixa() {
         </div>
       </div>
 
-      <div className="flex justify-end mb-3">
+      <div className="flex justify-end gap-2 mb-3">
+        <button onClick={() => setShowPrecos(true)} className="btn-ghost flex items-center gap-2 text-sm">
+          <DollarSign size={15} />
+          Preços
+        </button>
         <button onClick={() => setShowCategorias(true)} className="btn-ghost flex items-center gap-2 text-sm">
           <Tag size={15} />
           Gerenciar categorias
@@ -38,10 +44,11 @@ export default function Caixa() {
         </div>
       )}
 
-      <CaixaForm onSubmit={item => add.mutate(item)} loading={add.isPending} />
+      <CaixaForm onSubmit={item => add.mutate(item)} loading={add.isPending} onOpenPrecos={() => setShowPrecos(true)} />
       <CaixaList items={items} onDelete={id => remove.mutate(id)} />
 
       {showCategorias && <CategoriasModal onClose={() => setShowCategorias(false)} />}
+      {showPrecos && <PrecosModal onClose={() => setShowPrecos(false)} />}
     </div>
   )
 }
