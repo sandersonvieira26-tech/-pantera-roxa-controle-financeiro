@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Pacote de deploy (gerado a partir da dist)
+pantera-roxa-deploy.zip
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
