@@ -39,15 +39,14 @@ export function useRelatorio(periodo: Periodo) {
   }, [qc])
 
   const lanc = filterByPeriod(allLanc, periodo)
-  const fiad = filterByPeriod(allFiad, periodo)
   const parc = filterByPeriod(allParc, periodo)
 
-  const faturamento = calcFaturamento(lanc, fiad, parc)
+  const faturamento = calcFaturamento(lanc, parc)
   const custos = calcCustos(lanc)
   const lucro = calcLucro(faturamento, custos)
   const margem = calcMargem(lucro, faturamento)
   const aReceber = calcAReceber(allFiad, allParc)
-  const chartData = buildChartData(allLanc, allFiad, allParc)
+  const chartData = buildChartData(allLanc, allParc)
 
   return { faturamento, custos, lucro, margem, aReceber, chartData }
 }

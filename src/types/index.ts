@@ -5,10 +5,11 @@ export interface Lancamento {
   descricao: string
   valor: number
   data: string // YYYY-MM-DD
+  fiado_id: string | null // preenchido quando a entrada vem de um fiado pago
   created_at: string
 }
 
-export type LancamentoInsert = Omit<Lancamento, 'id' | 'user_id' | 'created_at'>
+export type LancamentoInsert = Omit<Lancamento, 'id' | 'user_id' | 'fiado_id' | 'created_at'>
 
 export interface Fiado {
   id: string

@@ -12,8 +12,8 @@ import type { Lancamento, Fiado, Parceiro } from '@/types'
 const today = new Date().toLocaleDateString('en-CA')
 
 const lancamentos: Lancamento[] = [
-  { id: '1', user_id: 'u', tipo: 'entrada', descricao: 'venda', valor: 100, data: today, created_at: '' },
-  { id: '2', user_id: 'u', tipo: 'saida', descricao: 'compra', valor: 40, data: today, created_at: '' },
+  { id: '1', user_id: 'u', tipo: 'entrada', descricao: 'venda', valor: 100, data: today, fiado_id: null, created_at: '' },
+  { id: '2', user_id: 'u', tipo: 'saida', descricao: 'compra', valor: 40, data: today, fiado_id: null, created_at: '' },
 ]
 
 const fiados: Fiado[] = [
@@ -27,12 +27,20 @@ const parceiros: Parceiro[] = [
 ]
 
 describe('calcFaturamento', () => {
-  it('soma entradas + fiados pagos + parceiros pagos', () => {
-    expect(calcFaturamento(lancamentos, fiados, parceiros)).toBe(230) // 100 + 30 + 100
+  it('soma entradas + parceiros pagos (fiado pago NÃO soma aqui)', () => {
+    expect(calcFaturamento(lancamentos, parceiros)).toBe(200) // 100 + 100
   })
-  it('não conta fiados pendentes nem parceiros pendentes', () => {
+  it('não conta parceiros pendentes', () => {
     const soSaida: Lancamento[] = [lancamentos[1]]
-    expect(calcFaturamento(soSaida, [fiados[1]], [parceiros[1]])).toBe(0)
+    expect(calcFaturamento(soSaida, [parceiros[1]])).toBe(0)
+  })
+  it('conta a entrada vinda de um fiado pago uma única vez (sem dobra)', () => {
+    // O trigger cria uma entrada com fiado_id; ela conta como entrada normal.
+    const comFiado: Lancamento[] = [
+      ...lancamentos,
+      { id: '7', user_id: 'u', tipo: 'entrada', descricao: 'Fiado pago — Ana', valor: 30, data: today, fiado_id: '3', created_at: '' },
+    ]
+    expect(calcFaturamento(comFiado, parceiros)).toBe(230) // 100 + 30 (fiado) + 100
   })
 })
 
@@ -68,12 +76,12 @@ describe('calcAReceber', () => {
 
 describe('buildChartData', () => {
   it('retorna 7 entradas', () => {
-    expect(buildChartData(lancamentos, fiados, parceiros)).toHaveLength(7)
+    expect(buildChartData(lancamentos, parceiros)).toHaveLength(7)
   })
-  it('hoje tem faturamento 230 e lucro 190', () => {
-    const data = buildChartData(lancamentos, fiados, parceiros)
+  it('hoje tem faturamento 200 e lucro 160', () => {
+    const data = buildChartData(lancamentos, parceiros)
     const todayEntry = data.find(d => d.isoDate === today)
-    expect(todayEntry?.faturamento).toBe(230)
-    expect(todayEntry?.lucro).toBe(190)
+    expect(todayEntry?.faturamento).toBe(200) // 100 entrada + 100 parceiro pago
+    expect(todayEntry?.lucro).toBe(160) // 200 - 40 custos
   })
 })

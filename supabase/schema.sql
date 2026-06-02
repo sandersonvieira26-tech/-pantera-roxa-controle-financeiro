@@ -70,5 +70,46 @@ CREATE POLICY "estoque: owner full access"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+-- =============================================
+-- Fiado pago → entrada automática no Caixa
+-- =============================================
+
+-- Liga a entrada de caixa ao fiado de origem.
+-- NULL = lançamento manual normal. ON DELETE CASCADE: ao excluir o
+-- fiado, sua entrada no caixa some junto.
+ALTER TABLE lancamentos
+  ADD COLUMN IF NOT EXISTS fiado_id UUID REFERENCES fiados(id) ON DELETE CASCADE;
+
+-- Quando um fiado vira pago, cria a entrada no caixa; quando volta a
+-- pendente, remove. Roda como o próprio usuário (SECURITY INVOKER), e o
+-- user_id copiado do fiado satisfaz a policy de RLS de lancamentos.
+CREATE OR REPLACE FUNCTION sync_fiado_lancamento()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.pago = true AND COALESCE(OLD.pago, false) = false THEN
+    -- Idempotente: não duplica se já existir entrada para este fiado.
+    INSERT INTO lancamentos (user_id, tipo, descricao, valor, data, fiado_id)
+    SELECT NEW.user_id,
+           'entrada',
+           'Fiado pago — ' || NEW.nome_cliente,
+           NEW.valor,
+           (now() AT TIME ZONE 'America/Sao_Paulo')::date,
+           NEW.id
+    WHERE NOT EXISTS (SELECT 1 FROM lancamentos WHERE fiado_id = NEW.id);
+  ELSIF NEW.pago = false AND OLD.pago = true THEN
+    DELETE FROM lancamentos WHERE fiado_id = NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_fiado_pago ON fiados;
+CREATE TRIGGER trg_fiado_pago
+  AFTER UPDATE OF pago ON fiados
+  FOR EACH ROW
+  EXECUTE FUNCTION sync_fiado_lancamento();
+
 -- Habilitar Realtime (rodar separadamente se necessário)
 -- No Supabase Dashboard → Database → Replication → habilitar para as 4 tabelas

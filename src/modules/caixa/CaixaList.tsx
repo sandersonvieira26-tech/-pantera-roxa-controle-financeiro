@@ -27,15 +27,27 @@ export default function CaixaList({ items, onDelete }: CaixaListProps) {
               ${item.tipo === 'entrada' ? 'border-income' : 'border-expense'}`}
           >
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">{item.descricao}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-white text-sm font-medium truncate">{item.descricao}</p>
+                {item.fiado_id && (
+                  <span
+                    className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-pending bg-pending/15 rounded px-1.5 py-0.5"
+                    title="Lançado automaticamente ao marcar o fiado como pago. Para remover, desmarque o fiado."
+                  >
+                    Fiado
+                  </span>
+                )}
+              </div>
               <p className="text-pantera-lavender/70 text-xs">{formatDate(item.data)}</p>
             </div>
             <span className={`font-semibold text-sm shrink-0 ${item.tipo === 'entrada' ? 'text-income' : 'text-expense'}`}>
               {item.tipo === 'entrada' ? '+' : '−'}{formatCurrency(item.valor)}
             </span>
-            <button onClick={() => setDeleteId(item.id)} className="btn-danger p-1 shrink-0">
-              <Trash2 size={15} />
-            </button>
+            {!item.fiado_id && (
+              <button onClick={() => setDeleteId(item.id)} className="btn-danger p-1 shrink-0">
+                <Trash2 size={15} />
+              </button>
+            )}
           </div>
         ))}
       </div>
