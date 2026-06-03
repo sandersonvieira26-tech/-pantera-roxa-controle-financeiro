@@ -1,24 +1,32 @@
 import { useState } from 'react'
 import { Search, Users } from 'lucide-react'
 import SummaryCard from '@/components/SummaryCard'
+import PeriodoTabs from '@/components/PeriodoTabs'
 import FiadoForm from './FiadoForm'
 import FiadoList from './FiadoList'
 import ClientesModal from './ClientesModal'
 import PrecosModal from '@/modules/caixa/PrecosModal'
+import { fiadosVisiveis } from './filtrarFiados'
 import { useFiados } from './useFiados'
-import { formatCurrency } from '@/utils/format'
+import { formatCurrency, filterByPeriod } from '@/utils/format'
+import type { Periodo } from '@/types'
 
 export default function Fiado() {
   const { data: items = [], add, addRapido, togglePago, remove } = useFiados()
   const [search, setSearch] = useState('')
   const [showClientes, setShowClientes] = useState(false)
   const [showPrecos, setShowPrecos] = useState(false)
+  const [periodo, setPeriodo] = useState<Periodo>('mes')
 
+  const visiveis = fiadosVisiveis(items, periodo)
+  // A Receber = todos os pendentes (dívida real). Já Recebido = pagos no período.
   const pendente = items.filter(f => !f.pago).reduce((s, f) => s + f.valor, 0)
-  const recebido = items.filter(f => f.pago).reduce((s, f) => s + f.valor, 0)
+  const recebido = filterByPeriod(items.filter(f => f.pago), periodo).reduce((s, f) => s + f.valor, 0)
 
   return (
     <div>
+      <PeriodoTabs value={periodo} onChange={setPeriodo} />
+
       <div className="mb-3">
         <SummaryCard primary title="A Receber" value={formatCurrency(pendente)} accent="yellow" />
         <div className="grid grid-cols-2 gap-2 mt-2">
@@ -59,7 +67,7 @@ export default function Fiado() {
       </div>
 
       <FiadoList
-        items={items}
+        items={visiveis}
         search={search}
         onToggle={(id, pago) => togglePago.mutate({ id, pago })}
         onDelete={id => remove.mutate(id)}

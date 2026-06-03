@@ -1,24 +1,30 @@
 import { useState } from 'react'
 import { Tag, DollarSign } from 'lucide-react'
 import SummaryCard from '@/components/SummaryCard'
+import PeriodoTabs from '@/components/PeriodoTabs'
 import CaixaForm from './CaixaForm'
 import CaixaList from './CaixaList'
 import CategoriasModal from './CategoriasModal'
 import PrecosModal from './PrecosModal'
 import { useLancamentos } from './useLancamentos'
-import { formatCurrency } from '@/utils/format'
+import { formatCurrency, filterByPeriod } from '@/utils/format'
+import type { Periodo } from '@/types'
 
 export default function Caixa() {
   const { data: items = [], add, remove } = useLancamentos()
   const [showCategorias, setShowCategorias] = useState(false)
   const [showPrecos, setShowPrecos] = useState(false)
+  const [periodo, setPeriodo] = useState<Periodo>('mes')
 
-  const entradas = items.filter(i => i.tipo === 'entrada').reduce((s, i) => s + i.valor, 0)
-  const saidas = items.filter(i => i.tipo === 'saida').reduce((s, i) => s + i.valor, 0)
+  const visiveis = filterByPeriod(items, periodo)
+  const entradas = visiveis.filter(i => i.tipo === 'entrada').reduce((s, i) => s + i.valor, 0)
+  const saidas = visiveis.filter(i => i.tipo === 'saida').reduce((s, i) => s + i.valor, 0)
   const saldo = entradas - saidas
 
   return (
     <div>
+      <PeriodoTabs value={periodo} onChange={setPeriodo} />
+
       <div className="mb-3">
         <SummaryCard primary title="Saldo" value={formatCurrency(saldo)} accent={saldo >= 0 ? 'green' : 'red'} />
         <div className="grid grid-cols-2 gap-2 mt-2">
@@ -45,7 +51,7 @@ export default function Caixa() {
       )}
 
       <CaixaForm onSubmit={item => add.mutate(item)} loading={add.isPending} onOpenPrecos={() => setShowPrecos(true)} />
-      <CaixaList items={items} onDelete={id => remove.mutate(id)} />
+      <CaixaList items={visiveis} onDelete={id => remove.mutate(id)} />
 
       {showCategorias && <CategoriasModal onClose={() => setShowCategorias(false)} />}
       {showPrecos && <PrecosModal onClose={() => setShowPrecos(false)} />}
