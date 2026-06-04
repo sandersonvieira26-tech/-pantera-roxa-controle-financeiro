@@ -1,10 +1,11 @@
-import { Wallet, BarChart2, Clock, Users, Package, LogOut, Download, Trash2 } from 'lucide-react'
+import { Home, Wallet, BarChart2, Clock, Users, Package, LogOut, Download, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/utils/format'
 import { useLucroMes } from '@/hooks/useLucroMes'
 import type { Tab } from '@/types'
 
 const TABS: { id: Tab; label: string; Icon: typeof Wallet }[] = [
+  { id: 'inicio', label: 'Início', Icon: Home },
   { id: 'caixa', label: 'Caixa', Icon: Wallet },
   { id: 'relatorio', label: 'Relatório', Icon: BarChart2 },
   { id: 'fiado', label: 'Fiado', Icon: Clock },

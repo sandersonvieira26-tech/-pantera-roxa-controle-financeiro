@@ -5,6 +5,7 @@ import Login from '@/modules/auth/Login'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
 import NavTabs from '@/components/NavTabs'
+import Dashboard from '@/modules/dashboard/Dashboard'
 import Caixa from '@/modules/caixa/Caixa'
 import Relatorio from '@/modules/relatorio/Relatorio'
 import Fiado from '@/modules/fiado/Fiado'
@@ -16,7 +17,7 @@ import type { Tab } from '@/types'
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
-  const [tab, setTab] = useState<Tab>('caixa')
+  const [tab, setTab] = useState<Tab>('inicio')
   const [showExport, setShowExport] = useState(false)
   const [showLimpar, setShowLimpar] = useState(false)
 
@@ -54,6 +55,7 @@ export default function App() {
         <NavTabs active={tab} onChange={setTab} />
 
         <main className="max-w-3xl mx-auto w-full px-2 py-3 sm:px-4">
+          {tab === 'inicio' && <Dashboard onNavigate={setTab} />}
           {tab === 'caixa' && <Caixa />}
           {tab === 'relatorio' && <Relatorio />}
           {tab === 'fiado' && <Fiado />}
