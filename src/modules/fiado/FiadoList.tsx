@@ -7,26 +7,22 @@ import type { Fiado } from '@/types'
 
 interface FiadoListProps {
   items: Fiado[]
-  search: string
+  emptyMessage?: string
   onToggle: (id: string, pago: boolean) => void
   onDelete: (id: string) => void
 }
 
-export default function FiadoList({ items, search, onToggle, onDelete }: FiadoListProps) {
+export default function FiadoList({ items, emptyMessage = 'Nenhum fiado ainda', onToggle, onDelete }: FiadoListProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const filtered = search
-    ? items.filter(f => f.nome_cliente.toLowerCase().includes(search.toLowerCase()))
-    : items
-
-  if (filtered.length === 0) {
-    return <EmptyState message={search ? 'Nenhum cliente encontrado' : 'Nenhum fiado ainda'} />
+  if (items.length === 0) {
+    return <EmptyState message={emptyMessage} />
   }
 
   return (
     <>
       <div className="space-y-1.5">
-        {filtered.map(item => (
+        {items.map(item => (
           <div
             key={item.id}
             className={`bg-pantera-card rounded-xl py-2.5 px-3 flex items-center gap-3 border-l-4 transition-colors duration-300 animate-fadeIn

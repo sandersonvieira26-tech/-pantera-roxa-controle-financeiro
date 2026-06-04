@@ -17,15 +17,30 @@ export default function Fiado() {
   const [showClientes, setShowClientes] = useState(false)
   const [showPrecos, setShowPrecos] = useState(false)
   const [periodo, setPeriodo] = useState<Periodo>('mes')
+  const [limite, setLimite] = useState(25)
 
   const visiveis = fiadosVisiveis(items, periodo)
+  const buscados = search
+    ? visiveis.filter(f => f.nome_cliente.toLowerCase().includes(search.toLowerCase()))
+    : visiveis
+  const mostrados = buscados.slice(0, limite)
   // A Receber = todos os pendentes (dívida real). Já Recebido = pagos no período.
   const pendente = items.filter(f => !f.pago).reduce((s, f) => s + f.valor, 0)
   const recebido = filterByPeriod(items.filter(f => f.pago), periodo).reduce((s, f) => s + f.valor, 0)
 
+  function trocarPeriodo(p: Periodo) {
+    setPeriodo(p)
+    setLimite(25)
+  }
+
+  function trocarBusca(s: string) {
+    setSearch(s)
+    setLimite(25)
+  }
+
   return (
     <div>
-      <PeriodoTabs value={periodo} onChange={setPeriodo} />
+      <PeriodoTabs value={periodo} onChange={trocarPeriodo} />
 
       <div className="mb-3">
         <SummaryCard primary title="A Receber" value={formatCurrency(pendente)} accent="yellow" />
@@ -62,16 +77,22 @@ export default function Fiado() {
           className="input pl-9"
           placeholder="Buscar por nome do cliente..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => trocarBusca(e.target.value)}
         />
       </div>
 
       <FiadoList
-        items={visiveis}
-        search={search}
+        items={mostrados}
+        emptyMessage={search ? 'Nenhum cliente encontrado' : 'Nenhum fiado ainda'}
         onToggle={(id, pago) => togglePago.mutate({ id, pago })}
         onDelete={id => remove.mutate(id)}
       />
+
+      {buscados.length > limite && (
+        <button onClick={() => setLimite(l => l + 25)} className="btn-ghost w-full mt-2 text-sm">
+          Ver mais ({buscados.length - limite})
+        </button>
+      )}
 
       {showClientes && <ClientesModal onClose={() => setShowClientes(false)} />}
       {showPrecos && <PrecosModal onClose={() => setShowPrecos(false)} />}

@@ -15,15 +15,22 @@ export default function Caixa() {
   const [showCategorias, setShowCategorias] = useState(false)
   const [showPrecos, setShowPrecos] = useState(false)
   const [periodo, setPeriodo] = useState<Periodo>('mes')
+  const [limite, setLimite] = useState(25)
 
   const visiveis = filterByPeriod(items, periodo)
+  const mostrados = visiveis.slice(0, limite)
   const entradas = visiveis.filter(i => i.tipo === 'entrada').reduce((s, i) => s + i.valor, 0)
   const saidas = visiveis.filter(i => i.tipo === 'saida').reduce((s, i) => s + i.valor, 0)
   const saldo = entradas - saidas
 
+  function trocarPeriodo(p: Periodo) {
+    setPeriodo(p)
+    setLimite(25)
+  }
+
   return (
     <div>
-      <PeriodoTabs value={periodo} onChange={setPeriodo} />
+      <PeriodoTabs value={periodo} onChange={trocarPeriodo} />
 
       <div className="mb-3">
         <SummaryCard primary title="Saldo" value={formatCurrency(saldo)} accent={saldo >= 0 ? 'green' : 'red'} />
@@ -51,7 +58,13 @@ export default function Caixa() {
       )}
 
       <CaixaForm onSubmit={item => add.mutate(item)} loading={add.isPending} onOpenPrecos={() => setShowPrecos(true)} />
-      <CaixaList items={visiveis} onDelete={id => remove.mutate(id)} />
+      <CaixaList items={mostrados} onDelete={id => remove.mutate(id)} />
+
+      {visiveis.length > limite && (
+        <button onClick={() => setLimite(l => l + 25)} className="btn-ghost w-full mt-2 text-sm">
+          Ver mais ({visiveis.length - limite})
+        </button>
+      )}
 
       {showCategorias && <CategoriasModal onClose={() => setShowCategorias(false)} />}
       {showPrecos && <PrecosModal onClose={() => setShowPrecos(false)} />}
