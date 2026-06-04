@@ -12,7 +12,7 @@ import type { Periodo } from '@/types'
 export default function Relatorio() {
   const [periodo, setPeriodo] = useState<Periodo>('mes')
   const [showMeta, setShowMeta] = useState(false)
-  const { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria, mesAtual, variacao } = useRelatorio(periodo)
+  const { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria, contagem, mesAtual, variacao } = useRelatorio(periodo)
   const { data: meta } = useMetas()
 
   return (
@@ -30,6 +30,16 @@ export default function Relatorio() {
           value={margem !== null ? `${margem.toFixed(1)}%` : '—'}
           accent="purple"
         />
+      </div>
+
+      <div className="card mb-3">
+        <p className="label mb-1">Vendas no período</p>
+        <p className="text-white text-lg font-semibold">
+          {contagem.vendas} {contagem.vendas === 1 ? 'venda' : 'vendas'}
+          <span className="text-pantera-lavender/60"> • </span>
+          {contagem.garrafas} {contagem.garrafas === 1 ? 'garrafa' : 'garrafas'}
+        </p>
+        <p className="text-pantera-lavender text-xs mt-1">Venda rápida + fiado rápido (conferência)</p>
       </div>
 
       <div className="card border-pantera-pink/30 bg-pantera-pink/5">

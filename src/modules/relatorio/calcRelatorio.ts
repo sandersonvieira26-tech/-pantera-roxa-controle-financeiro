@@ -1,5 +1,28 @@
-import type { Lancamento, Fiado, Parceiro, Categoria } from '@/types'
-import { last7Days, shortDate } from '@/utils/format'
+import type { Lancamento, Fiado, Parceiro, Categoria, Periodo } from '@/types'
+import { last7Days, shortDate, filterByPeriod } from '@/utils/format'
+
+export interface ContagemVendas {
+  vendas: number
+  garrafas: number
+}
+
+// Conta vendas e garrafas ESTRUTURADAS (venda rápida + fiado rápido, com qtd)
+// no período. Lançamentos manuais e a entrada vinda de fiado pago (qtd 0) não
+// entram, evitando contagem dupla.
+export function contarVendas(
+  lancamentos: Lancamento[],
+  fiados: Fiado[],
+  periodo: Periodo,
+): ContagemVendas {
+  const lancEstruturados = filterByPeriod(lancamentos, periodo)
+    .filter(l => l.tipo === 'entrada' && (l.qtd_300 > 0 || l.qtd_500 > 0))
+  const fiadosEstruturados = filterByPeriod(fiados, periodo)
+    .filter(f => f.qtd_300 > 0 || f.qtd_500 > 0)
+  const garrafas =
+    lancEstruturados.reduce((s, l) => s + l.qtd_300 + l.qtd_500, 0) +
+    fiadosEstruturados.reduce((s, f) => s + f.qtd_300 + f.qtd_500, 0)
+  return { vendas: lancEstruturados.length + fiadosEstruturados.length, garrafas }
+}
 
 export interface CustoCategoria {
   nome: string

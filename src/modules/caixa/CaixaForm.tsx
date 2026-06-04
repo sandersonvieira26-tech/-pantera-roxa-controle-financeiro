@@ -54,6 +54,9 @@ export default function CaixaForm({ onSubmit, loading, onOpenPrecos }: CaixaForm
       valor: parseFloat(valor),
       data,
       categoria_id: tipo === 'saida' && categoriaId ? categoriaId : null,
+      // Venda rápida (entrada) grava a quantidade por tamanho pro contador de garrafas.
+      qtd_300: tipo === 'entrada' && tamanho === '300ml' ? qtd : 0,
+      qtd_500: tipo === 'entrada' && tamanho === '500ml' ? qtd : 0,
     })
     setDescricao('')
     setValor('')

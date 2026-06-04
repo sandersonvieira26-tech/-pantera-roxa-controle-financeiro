@@ -189,5 +189,14 @@ CREATE POLICY "metas: owner full access"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+-- =============================================
+-- Quantidade por tamanho na venda rápida (contador de garrafas)
+-- =============================================
+
+-- Venda rápida preenche; lançamento manual e entrada vinda de fiado ficam 0/0.
+ALTER TABLE lancamentos
+  ADD COLUMN IF NOT EXISTS qtd_300 INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS qtd_500 INTEGER NOT NULL DEFAULT 0;
+
 -- Habilitar Realtime (rodar separadamente se necessário)
 -- No Supabase Dashboard → Database → Replication → habilitar para as tabelas

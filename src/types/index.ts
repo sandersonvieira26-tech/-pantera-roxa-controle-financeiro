@@ -7,12 +7,14 @@ export interface Lancamento {
   data: string // YYYY-MM-DD
   fiado_id: string | null // preenchido quando a entrada vem de um fiado pago
   categoria_id: string | null // categoria da saída (NULL = "Sem categoria")
+  qtd_300: number // garrafas por tamanho na venda rápida (manual = 0)
+  qtd_500: number
   created_at: string
 }
 
 export type LancamentoInsert =
-  Omit<Lancamento, 'id' | 'user_id' | 'fiado_id' | 'categoria_id' | 'created_at'>
-  & { categoria_id?: string | null }
+  Omit<Lancamento, 'id' | 'user_id' | 'fiado_id' | 'categoria_id' | 'qtd_300' | 'qtd_500' | 'created_at'>
+  & { categoria_id?: string | null; qtd_300?: number; qtd_500?: number }
 
 export interface Categoria {
   id: string
