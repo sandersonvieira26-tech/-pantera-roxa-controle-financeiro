@@ -55,6 +55,15 @@ export interface Cliente {
   created_at: string
 }
 
+export interface Meta {
+  user_id: string
+  meta_faturamento: number
+  meta_lucro: number
+  updated_at: string
+}
+
+export type MetaUpsert = Pick<Meta, 'meta_faturamento' | 'meta_lucro'>
+
 export interface Parceiro {
   id: string
   user_id: string

@@ -2,16 +2,23 @@ import { useState } from 'react'
 import SummaryCard from '@/components/SummaryCard'
 import PeriodoTabs from '@/components/PeriodoTabs'
 import RelatorioChart from './RelatorioChart'
+import RelatorioMeta from './RelatorioMeta'
+import MetaModal from './MetaModal'
 import { useRelatorio } from './useRelatorio'
+import { useMetas } from './useMetas'
 import { formatCurrency } from '@/utils/format'
 import type { Periodo } from '@/types'
 
 export default function Relatorio() {
   const [periodo, setPeriodo] = useState<Periodo>('mes')
-  const { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria } = useRelatorio(periodo)
+  const [showMeta, setShowMeta] = useState(false)
+  const { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria, mesAtual, variacao } = useRelatorio(periodo)
+  const { data: meta } = useMetas()
 
   return (
     <div>
+      <RelatorioMeta mesAtual={mesAtual} variacao={variacao} meta={meta} onOpenMeta={() => setShowMeta(true)} />
+
       <PeriodoTabs value={periodo} onChange={setPeriodo} />
 
       <div className="grid grid-cols-2 gap-3 mb-3">
@@ -53,6 +60,8 @@ export default function Relatorio() {
           </div>
         </div>
       )}
+
+      {showMeta && <MetaModal onClose={() => setShowMeta(false)} />}
     </div>
   )
 }

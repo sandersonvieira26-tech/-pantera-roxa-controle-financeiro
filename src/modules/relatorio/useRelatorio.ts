@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { filterByPeriod } from '@/utils/format'
-import { calcFaturamento, calcCustos, calcLucro, calcMargem, calcAReceber, buildChartData, calcCustosPorCategoria } from './calcRelatorio'
+import { filterByPeriod, monthRange } from '@/utils/format'
+import { calcFaturamento, calcCustos, calcLucro, calcMargem, calcAReceber, buildChartData, calcCustosPorCategoria, calcVariacao } from './calcRelatorio'
 import { fetchLancamentos, LANCAMENTOS_KEY } from '@/modules/caixa/useLancamentos'
 import { fetchCategorias, CATEGORIAS_KEY } from '@/modules/caixa/useCategorias'
 import { fetchFiados, FIADOS_KEY } from '@/modules/fiado/useFiados'
@@ -55,5 +55,19 @@ export function useRelatorio(periodo: Periodo) {
   const chartData = buildChartData(allLanc, allParc)
   const custosPorCategoria = calcCustosPorCategoria(lanc, categorias)
 
-  return { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria }
+  // Resumo mensal (sempre mês atual vs anterior, independente das abas).
+  function resumoMes(r: { start: string; end: string }) {
+    const l = allLanc.filter(x => x.data >= r.start && x.data <= r.end)
+    const p = allParc.filter(x => x.data >= r.start && x.data <= r.end)
+    const fat = calcFaturamento(l, p)
+    return { faturamento: fat, lucro: calcLucro(fat, calcCustos(l)) }
+  }
+  const mesAtual = resumoMes(monthRange(0))
+  const mesAnterior = resumoMes(monthRange(1))
+  const variacao = {
+    faturamento: calcVariacao(mesAtual.faturamento, mesAnterior.faturamento),
+    lucro: calcVariacao(mesAtual.lucro, mesAnterior.lucro),
+  }
+
+  return { faturamento, custos, lucro, margem, aReceber, chartData, custosPorCategoria, mesAtual, mesAnterior, variacao }
 }

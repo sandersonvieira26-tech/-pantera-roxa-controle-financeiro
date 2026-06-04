@@ -173,5 +173,21 @@ ALTER TABLE fiados
   ADD COLUMN IF NOT EXISTS qtd_300 INTEGER NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS qtd_500 INTEGER NOT NULL DEFAULT 0;
 
+-- =============================================
+-- Metas mensais (faturamento e lucro)
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS metas (
+  user_id           UUID PRIMARY KEY REFERENCES auth.users NOT NULL,
+  meta_faturamento  NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (meta_faturamento >= 0),
+  meta_lucro        NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (meta_lucro >= 0),
+  updated_at        TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE metas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "metas: owner full access"
+  ON metas FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
 -- Habilitar Realtime (rodar separadamente se necessário)
 -- No Supabase Dashboard → Database → Replication → habilitar para as tabelas

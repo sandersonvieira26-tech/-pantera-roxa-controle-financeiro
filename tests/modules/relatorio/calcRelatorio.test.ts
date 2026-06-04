@@ -7,6 +7,7 @@ import {
   calcAReceber,
   buildChartData,
   calcCustosPorCategoria,
+  calcVariacao,
 } from '@/modules/relatorio/calcRelatorio'
 import type { Lancamento, Fiado, Parceiro, Categoria } from '@/types'
 
@@ -66,6 +67,21 @@ describe('calcMargem', () => {
   })
   it('retorna null quando faturamento é zero', () => {
     expect(calcMargem(-100, 0)).toBeNull()
+  })
+})
+
+describe('calcVariacao', () => {
+  it('crescimento positivo', () => {
+    expect(calcVariacao(120, 100)).toBeCloseTo(20, 5)
+  })
+  it('queda negativa', () => {
+    expect(calcVariacao(95, 100)).toBeCloseTo(-5, 5)
+  })
+  it('atual zero = -100%', () => {
+    expect(calcVariacao(0, 50)).toBe(-100)
+  })
+  it('mês anterior zero retorna null (sem base de comparação)', () => {
+    expect(calcVariacao(100, 0)).toBeNull()
   })
 })
 

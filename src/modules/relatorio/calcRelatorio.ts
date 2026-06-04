@@ -53,6 +53,13 @@ export function calcMargem(lucro: number, faturamento: number): number | null {
   return (lucro / faturamento) * 100
 }
 
+// Variação percentual de `atual` sobre `anterior`. null quando não há base
+// de comparação (mês anterior zero).
+export function calcVariacao(atual: number, anterior: number): number | null {
+  if (anterior === 0) return null
+  return ((atual - anterior) / anterior) * 100
+}
+
 export function calcAReceber(fiados: Fiado[], parceiros: Parceiro[]): number {
   const fiadosPendentes = fiados.filter(f => !f.pago).reduce((s, f) => s + f.valor, 0)
   const parceirosPendentes = parceiros.filter(p => !p.pago).reduce((s, p) => s + p.total, 0)

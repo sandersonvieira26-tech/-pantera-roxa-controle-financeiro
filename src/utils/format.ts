@@ -57,3 +57,12 @@ export function shortDate(isoDate: string): string {
   const [, month, day] = isoDate.split('-')
   return `${day}/${month}`
 }
+
+// Primeiro e último dia (ISO local) de um mês. mesesAtras=0 → mês atual,
+// 1 → mês passado. O construtor Date normaliza a virada de ano.
+export function monthRange(mesesAtras = 0): { start: string; end: string } {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth() - mesesAtras, 1)
+  const end = new Date(now.getFullYear(), now.getMonth() - mesesAtras + 1, 0)
+  return { start: localDateISO(start), end: localDateISO(end) }
+}
