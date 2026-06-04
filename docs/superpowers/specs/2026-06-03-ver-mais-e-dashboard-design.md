@@ -1,12 +1,13 @@
-# Design: "Ver mais" nas listas + Dashboard (tela inicial) com evolução mensal
+# Design: "Ver mais" nas listas + Contador de vendas/garrafas + Dashboard
 
 **Data:** 2026-06-03
 **Status:** Aprovado para implementação
 
-Duas melhorias brainstormadas juntas. Execução em 2 etapas, com code review em cada:
+Melhorias brainstormadas juntas. Execução em 3 etapas, com code review em cada:
 
 1. **"Ver mais"** nas listas de Caixa e Fiado (acaba com a lista infinita).
-2. **Dashboard** (tela inicial) com cards e gráfico de evolução mês a mês.
+2. **Contador de vendas/garrafas** no período (conferência: "fiz 10, registrei 9").
+3. **Dashboard** (tela inicial) com cards, contador e gráfico de evolução mês a mês.
 
 ---
 
@@ -16,89 +17,117 @@ Duas melhorias brainstormadas juntas. Execução em 2 etapas, com code review em
 
 | Tema | Decisão |
 |------|---------|
-| Estratégia | Mostrar os 25 itens mais recentes do que está visível; botão "Ver mais" carrega +25. |
+| Estratégia | Mostrar os 25 mais recentes do que está visível; botão "Ver mais" carrega +25. |
 | Reset | Ao trocar período ou busca, volta para os primeiros 25. |
-| Escopo de dados | Client-side (o app já baixa tudo). Resolve o tamanho da tela; volume baixado fica para uma futura paginação no servidor (fora de escopo). |
-| Tamanho do bloco | 25. |
+| Escopo | Client-side (o app já baixa tudo). Resolve o tamanho da tela. |
+| Bloco | 25. |
 
-### Caixa (`src/modules/caixa/Caixa.tsx`)
+### Caixa (`Caixa.tsx`)
 
-- Estado `limite` (default 25).
-- `visiveis = filterByPeriod(items, periodo)`; `mostrados = visiveis.slice(0, limite)`.
-- `CaixaList` recebe `mostrados`.
-- Abaixo da lista: botão **"Ver mais"** quando `visiveis.length > limite` (`onClick` → `setLimite(l => l + 25)`).
-- Resetar `limite` para 25 ao mudar o período: `onChange={p => { setPeriodo(p); setLimite(25) }}`.
+- Estado `limite` (25). `mostrados = filterByPeriod(items, periodo).slice(0, limite)`.
+- Botão "Ver mais" quando há mais que `limite`. Resetar `limite` ao trocar período.
 
-### Fiado (`src/modules/fiado/Fiado.tsx` + `FiadoList.tsx`)
+### Fiado (`Fiado.tsx` + `FiadoList.tsx`)
 
-- **Refator:** mover a busca por nome do `FiadoList` para o `Fiado.tsx`, para paginar **depois** de buscar.
-  - `FiadoList` deixa de receber/usar `search`; passa a só renderizar `items`.
-  - A mensagem de vazio do `FiadoList` fica genérica ("Nenhum fiado").
-- No `Fiado.tsx`:
-  - `visiveis = fiadosVisiveis(items, periodo)` (pendentes sempre + pagos no período — já existe).
-  - `buscados = search ? visiveis.filter(nome inclui search) : visiveis`.
-  - `mostrados = buscados.slice(0, limite)`.
-  - Botão **"Ver mais"** quando `buscados.length > limite`.
-  - Resetar `limite` para 25 ao mudar período **ou** busca (nos respectivos handlers).
-- Cardões (A Receber / Já Recebido / Total) continuam calculados sobre todos os dados, não sobre os `mostrados`.
-
-### Testes
-
-- A paginação é estado de UI simples (slice + botão); coberta pelo type-check e teste manual. Sem função pura nova a testar além do que já existe (`fiadosVisiveis`).
+- **Refator:** mover a busca por nome de `FiadoList` para `Fiado.tsx` (paginar depois de buscar). `FiadoList` passa a só renderizar `items`.
+- `visiveis = fiadosVisiveis(items, periodo)` → `buscados` (filtro de nome) → `mostrados = buscados.slice(0, limite)`.
+- Botão "Ver mais" quando `buscados.length > limite`. Resetar `limite` ao trocar período **ou** busca.
+- Cardões continuam sobre todos os dados.
 
 ---
 
-## Parte 2 — Dashboard (tela inicial) + evolução mensal
+## Parte 2 — Contador de vendas/garrafas
+
+### Objetivo
+
+Conferência: ver quantas **vendas** e quantas **garrafas** saíram no período, pra cruzar com o que foi produzido ("fiz 10, o app mostra 9 → faltou lançar").
 
 ### Decisões
 
 | Tema | Decisão |
 |------|---------|
-| Aba | Nova aba **`inicio`** ("Início"), vira a tela inicial do app. As 5 abas atuais continuam. |
-| Cards | Vendas de hoje, Saldo do mês, A Receber, Lucro do mês + meta (progresso %). |
-| Gráfico | **Linha**, últimos **6 meses**, séries **Faturamento** e **Lucro**. |
-| Dados | Reaproveita lançamentos/fiados/parceiros/metas. Nenhuma tabela nova. |
+| Base | Só vendas **estruturadas**: venda rápida (lançamentos com qtd) + fiado rápido (fiados com qtd). Lançamentos manuais de texto livre não entram. |
+| Onde | Card no **Relatório** (respeita o filtro de período) e card no **Dashboard** (Parte 3). |
+| Sem dobra | Entrada de caixa criada por fiado pago tem qtd 0 (o fiado guarda a qtd) → não conta duas vezes. |
 
-### Navegação
+### Banco de dados (`schema.sql` + migração)
 
-- `src/types/index.ts`: adicionar `'inicio'` ao tipo `Tab` e `TAB_LABELS` (label "INÍCIO").
-- `NavTabs.tsx` e `Sidebar.tsx`: adicionar item `inicio` (ícone `Home`) como primeiro da lista.
-- `App.tsx`: `useState<Tab>('inicio')` (abre no Dashboard); renderizar `{tab === 'inicio' && <Dashboard />}`.
-- Mobile: o menu inferior passa a ter 6 ícones (cabe, fica mais justo).
+```sql
+ALTER TABLE lancamentos
+  ADD COLUMN IF NOT EXISTS qtd_300 INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS qtd_500 INTEGER NOT NULL DEFAULT 0;
+```
 
-### Cards (cálculos, reaproveitando funções existentes)
+- Venda rápida preenche; lançamento manual e entrada vinda de fiado ficam 0/0.
 
-- **Vendas de hoje** = Σ `lancamentos` tipo `entrada` com `data === hoje`.
-- **Saldo do mês** = entradas − saídas do mês atual (`monthRange(0)`).
-- **A Receber** = `calcAReceber(fiados, parceiros)`.
-- **Lucro do mês + meta** = lucro do mês atual + progresso vs `meta_lucro` (barra %).
+### Venda rápida grava a quantidade (`CaixaForm.tsx`)
 
-### Evolução mensal (função pura testável)
+- Hoje a venda rápida só preenche descrição e valor. Passa a enviar também `qtd_300`/`qtd_500` conforme o tamanho escolhido × quantidade (apenas em `entrada`; manual = 0).
+- `Lancamento` ganha `qtd_300`/`qtd_500`; `LancamentoInsert` aceita os dois como opcionais.
 
-- `calcEvolucao.ts` → `buildEvolucaoMensal(lancamentos, parceiros, nMeses = 6)` retorna, em ordem cronológica, `[{ label, faturamento, lucro }]`:
-  - para cada mês (de `nMeses-1` atrás até 0): fatia por `monthRange(i)`, `faturamento = calcFaturamento(l, p)`, `lucro = calcLucro(faturamento, calcCustos(l))`.
-  - `label` = abreviação do mês em pt-BR (jan, fev, …) derivada de `monthRange(i).start`.
-- `EvolucaoChart.tsx`: `LineChart` (recharts) com duas linhas, no estilo de `RelatorioChart`.
+### Cálculo (função pura testável)
 
-### Estrutura (novo módulo `src/modules/dashboard/`)
+`contarVendas(lancamentos, fiados, periodo)` → `{ vendas: number; garrafas: number }`:
+- lançamentos `entrada` com `(qtd_300>0 || qtd_500>0)` e `data` no período.
+- fiados com `(qtd_300>0 || qtd_500>0)` e `data` no período.
+- `vendas` = nº desses registros (lançamentos + fiados).
+- `garrafas` = Σ `(qtd_300 + qtd_500)` dos dois.
 
-- `Dashboard.tsx` — monta cards + gráfico.
-- `useDashboard.ts` — `useQuery` nas chaves já existentes (lançamentos, fiados, parceiros, metas — cache compartilhado, sem busca extra) e deriva cards + evolução.
-- `EvolucaoChart.tsx` — gráfico de linha.
-- `calcEvolucao.ts` — função pura.
+> Observação: como o fiado rápido acumula a retirada do dia numa linha só, cada linha de fiado conta como 1 "venda" (mas as garrafas somam o total real). Para a conferência o número que importa é o de **garrafas**.
 
-### Atualização
+### Relatório
 
-- Dados carregam ao abrir o Dashboard (busca atual). Atualização em tempo real permanece nas abas Caixa/Fiado/Relatório.
+- Card "Vendas no período" exibindo `9 vendas • 14 garrafas`, calculado sobre `filterByPeriod` (mesmo período das abas).
 
 ### Testes
 
-- `buildEvolucaoMensal`: nº de meses, ordem cronológica, soma por mês, rótulos pt-BR.
+- `contarVendas`: soma de garrafas, contagem de vendas, ignora manuais (qtd 0), não conta a entrada vinda de fiado, respeita período.
+
+---
+
+## Parte 3 — Dashboard (tela inicial) + evolução mensal
+
+### Decisões
+
+| Tema | Decisão |
+|------|---------|
+| Aba | Nova aba **`inicio`** ("Início"), tela inicial. As 5 atuais continuam. |
+| Cards | Vendas de hoje, Saldo do mês, A Receber, Lucro do mês + meta, e **Vendas/garrafas** (do dia). |
+| Gráfico | **Linha**, últimos **6 meses**, séries **Faturamento** e **Lucro**. |
+| Dados | Reaproveita lançamentos/fiados/parceiros/metas. Sem tabela nova. |
+
+### Navegação
+
+- `types`: `'inicio'` em `Tab` e `TAB_LABELS` ("INÍCIO").
+- `NavTabs.tsx` / `Sidebar.tsx`: item `inicio` (ícone `Home`) como primeiro.
+- `App.tsx`: `useState<Tab>('inicio')`; render `{tab === 'inicio' && <Dashboard />}`.
+- Mobile: menu inferior com 6 ícones (mais justo, cabe).
+
+### Cards (reaproveitando cálculos)
+
+- **Vendas de hoje** = Σ entradas com `data === hoje`.
+- **Saldo do mês** = entradas − saídas do mês atual (`monthRange(0)`).
+- **A Receber** = `calcAReceber(fiados, parceiros)`.
+- **Lucro do mês + meta** = lucro do mês + progresso vs `meta_lucro` (%).
+- **Vendas/garrafas de hoje** = `contarVendas(lancamentos, fiados, 'hoje')`.
+
+### Evolução mensal (função pura)
+
+- `buildEvolucaoMensal(lancamentos, parceiros, nMeses = 6)` → ordem cronológica `[{ label, faturamento, lucro }]`, usando `monthRange(i)`, `calcFaturamento`/`calcLucro`. `label` = mês pt-BR (jan, fev, …).
+- `EvolucaoChart.tsx`: `LineChart` (recharts) com duas linhas, estilo de `RelatorioChart`.
+
+### Estrutura (novo módulo `src/modules/dashboard/`)
+
+- `Dashboard.tsx`, `useDashboard.ts` (useQuery nas chaves existentes — cache compartilhado), `EvolucaoChart.tsx`, `calcEvolucao.ts`.
+
+### Testes
+
+- `buildEvolucaoMensal`: nº de meses, ordem, soma por mês, rótulos.
 
 ---
 
 ## Fora de escopo
 
-- Paginação no servidor (Supabase `range`) — futura, se o volume crescer muito.
-- Personalizar quais cards aparecem / escolher período do gráfico na tela.
-- KPIs de produto ("o que mais vende").
+- Paginação no servidor (Supabase `range`).
+- Personalizar cards/período do gráfico na tela.
+- Relatório de "qual sabor/tamanho mais vende" (o `qtd` por tamanho já fica guardado, então é um próximo passo natural).
